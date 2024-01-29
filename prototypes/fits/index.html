@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>FITS library prototype</title>
+        <script src="Header.js"></script>
+        <script src="BinaryTable.js"></script>
+        <script src="Utils.js"></script>
+        <script src="fits.js"></script>
+    </head>
+
+    <body>
+
+        <input type="file" id="file-selector" multiple>
+
+        <script>
+
+            function readFile(file) {
+                const reader = new FileReader();
+
+                reader.addEventListener('load', (event) => {
+                    const result = event.target.result;
+                    console.log(result);
+                    console.log(result.byteLength);
+
+                    let fitsReader = new FITSPrototype(file, result);
+
+                });
+
+                reader.readAsArrayBuffer(file);
+            }
+
+
+            const fileSelector = document.getElementById('file-selector');
+
+            fileSelector.addEventListener('change', (event) => {
+                const fileList = event.target.files;
+                console.log(fileList);
+
+                readFile(fileList[0]);
+            });
+
+
+        </script>
+
+    </body>
+
+</html>
