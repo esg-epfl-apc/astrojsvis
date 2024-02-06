@@ -5,6 +5,21 @@
     <title>Graphs</title>
     <script src="js/d3.v7.js"></script>
     <script src="js/graph.js"></script>
+    <style>
+        .graph_container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2%;
+            margin: 2%;
+        }
+
+        .graph_container div {
+            height: 400px;
+            border: 1px solid black;
+            padding: 1%;
+        }
+
+    </style>
 </head>
 <body onload="setGraph()">
 
@@ -15,6 +30,29 @@
     <div id="vis"></div>
 
     <div id="vis_light_curve"></div>
+
+    <div id="data-div"></div>
+
+    <div id="vis_light_curve_log_scale" class="graph_container">
+        <div id="graph_container_log"></div>
+        <div id="graph_controls_log">
+            <button id="btn_switch_scale">
+                Switch scale
+            </button>
+        </div>
+    </div>
+
+    <div id="vis_light_curve_zoom" class="graph_container">
+        <div id="graph_container_zoom"></div>
+        <div id="graph_controls_zoom">
+
+        </div>
+    </div>
+
+    <div id="vis_light_curve_custom" class="graph_container">
+        <div id="graph_container_custom"></div>
+        <div id="graph_controls_custom"></div>
+    </div>
 
 </body>
 </html>

@@ -52,6 +52,14 @@ class FITSPrototype {
 
     }
 
+    create_csv_from_data(data) {
+
+    }
+
+    create_json_from_data(data) {
+        //let json_string = JSON.stringify(data);
+    }
+
     debug_readPrimaryHeader() {
 
         let primaryHeader = new Header(this.fileName, Header.PRIMARY_HEADER);
