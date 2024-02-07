@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="fits.js"></script>
+</head>
+
+<body>
+
+<script>
+
+        const fp = "fits_test.fits";
+        let FITS = astro.FITS;
+
+        const callback = function(fits_object) {
+
+            let hdu = this.getHDU();
+            let header = hdu.header;
+            let data = hdu.data;
+
+            console.log(header);
+            console.log(data)
+        }
+
+        let fits = new FITS(fp, callback);
+
+</script>
+
+</body>
+
+</html>
