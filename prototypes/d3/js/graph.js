@@ -17,6 +17,16 @@ let height_light_log = 450;
 let data_light;
 let scale_light;
 
+let scale_type = [
+    "Linear",
+    "Log"
+];
+
+let custom_graph_trans = {
+    'x': {'data': 'rate', 'scale': 'linear'},
+    'y': {'data': 'time', 'scale': 'linear'}
+}
+
 function setGraph() {
 
     const margin = {top: 50, right: 30, bottom: 30, left: 60},
@@ -568,6 +578,7 @@ function setGraph() {
 
             graphLog();
             graphZoom();
+            graphCustomAxis();
 
         });
 
@@ -928,10 +939,247 @@ function graphZoom() {
 
 }
 
-const margin_light_custom = {top: 50, right: 30, bottom: 30, left: 60},
-    width_light_custom = 950,
-    height_light_custom = 450;
+let width_custom;
+let height_custom;
 
-function graphCustom() {
+let svg_light_custom;
+
+let x_custom;
+let y_custom;
+
+function graphCustomAxis() {
+
+    const margin_light_custom = {top: 20, right: 20, bottom: 20, left: 50};
+
+    let container = document.getElementById('graph_container_custom');
+
+    width_custom = container.offsetWidth * 0.5;
+    height_custom = container.offsetHeight * 0.5;
+
+    svg_light_custom = d3.select("#graph_container_custom")
+        .append("svg")
+        .attr("id", "light-curve-svg-custom")
+        .attr("width", width_custom + 70)
+        .attr("height", height_custom + 40)
+        .append("g")
+        .attr("transform",
+            `translate(${margin_light_custom.left}, ${margin_light_custom.top})`);
+
+    x_custom = d3.scaleLinear()
+        .domain([scale_light.y_min, scale_light.y_max])
+        .range([0, width_custom]);
+
+    svg_light_custom.append("g")
+        .attr("id", "x_custom")
+        .attr("transform", `translate(0, ${height_custom})`)
+        .call(d3.axisBottom(x_custom)
+            .tickFormat(d3.format(".1f")))
+        .call(g => g.selectAll(".tick line").clone()
+            .attr("y2", -height_custom)
+            .attr("stroke-opacity", 0.2));
+
+    y_custom = d3.scaleLinear()
+        .domain([scale_light.x_min, scale_light.x_max])
+        .range([height_custom, 0]);
+
+    svg_light_custom.append("g")
+        .attr("id", "y_custom")
+        .call(d3.axisLeft(y_custom)
+            .tickFormat(d3.format(".1f")))
+        .call(g => g.selectAll(".tick line").clone()
+            .attr("x2", width_custom)
+            .attr("stroke-opacity", 0.2));
+
+    svg_light_custom.append('g').attr("id", "light_log")
+        .selectAll("dot")
+        .data(data_light)
+        .enter()
+        .append("circle")
+        .attr("cx", function (d) { return x_custom(d.rate); } )
+        .attr("cy", function (d) { return y_custom(d.time); } )
+        .attr("r", 5)
+        .style("fill", "black")
+        .style("opacity", 1)
+        .style("stroke", "white")
+
+        setupDataControls(data_light);
+
+}
+
+function setupDataControls(data) {
+    console.log(data.columns);
+
+    let columns = data.columns;
+
+    let options_x = getOptionsFromData(columns);
+    let options_y = getOptionsFromData(columns);
+
+    let select_data_x = document.getElementById("data_x");
+    let select_data_y = document.getElementById("data_y");
+
+    options_x.forEach(function(option) {
+        select_data_x.add(option);
+    });
+
+    options_y.forEach(function(option) {
+        select_data_y.add(option);
+    });
+
+    let select_scale_x = document.getElementById("scale_x");
+    let select_scale_y = document.getElementById("scale_y");
+
+    select_data_x.addEventListener("change", (e) => dataListener(e));
+    select_data_y.addEventListener("change", (e) => dataListener(e));
+
+    select_scale_x.addEventListener("change", (e) => scaleListener(e));
+    select_scale_y.addEventListener("change", (e) => scaleListener(e));
+
+}
+
+function getOptionsFromData(columns) {
+    let options = [];
+    let option;
+
+    columns.forEach(function(column) {
+        option = document.createElement("option");
+
+        option.value = column;
+        option.text = column;
+
+        options.push(option);
+    })
+
+    return options;
+}
+
+function dataListener(e) {
+    console.log(e);
+
+    let column = e.target.value;
+    let axis = e.target.dataset.axis;
+
+    custom_graph_trans[axis].data = column;
+
+    updateData('data', axis);
+
+    console.log(column);
+    console.log(axis);
+    console.log(custom_graph_trans);
+}
+
+function scaleListener(e) {
+    let scale = e.target.value;
+    let axis = e.target.dataset.axis;
+
+    custom_graph_trans[axis].scale = scale;
+
+    updateData('scale', axis);
+}
+
+function updateData(type, axis) {
+
+    console.log(data_light);
+
+    if(type === 'data') {
+
+        if(axis === 'x') {
+
+            d3.select("#x_custom").remove();
+
+            if(custom_graph_trans['x'].scale === 'linear') {
+                x_custom = d3.scaleLinear()
+                    .domain(d3.extent(data_light, d => d[custom_graph_trans['x'].data]))
+                    .range([0, width_custom]);
+            } else {
+                x_custom = d3.scaleLog()
+                    .domain(d3.extent(data_light, d => d[custom_graph_trans['x'].data]))
+                    .range([0, width_custom]);
+            }
+
+            let gx = svg_light_custom.append("g")
+                .attr("id", "x_custom")
+                .attr("transform", `translate(0, ${height_custom})`);
+
+            gx.transition()
+                .duration(750)
+                .call(d3.axisBottom(x_custom));
+
+        } else {
+
+            d3.select("#y_custom").remove();
+
+            if(custom_graph_trans['y'].scale === 'linear') {
+                y_custom = d3.scaleLinear()
+                    .domain(d3.extent(data_light, d => d[custom_graph_trans['y'].data]))
+                    .range([0, height_custom]);
+            } else {
+                y_custom = d3.scaleLog()
+                    .domain(d3.extent(data_light, d => d[custom_graph_trans['y'].data]))
+                    .range([0, height_custom]);
+            }
+
+            let gx = svg_light_custom.append("g")
+                .attr("id", "y_custom");
+
+            gx.transition()
+                .duration(750)
+                .call(d3.axisLeft(y_custom));
+
+        }
+
+    } else {
+
+        if(axis === 'x') {
+
+            d3.select("#x_custom").remove();
+
+            if(custom_graph_trans['x'].scale === 'linear') {
+                x_custom = d3.scaleLinear()
+                    .domain(d3.extent(data_light, d => d[custom_graph_trans['x'].data]))
+                    .range([0, width_custom]);
+            } else {
+                x_custom = d3.scaleLog()
+                    .domain(d3.extent(data_light, d => d[custom_graph_trans['x'].data]))
+                    .range([0, width_custom]);
+            }
+
+            let gx = svg_light_custom.append("g")
+                .attr("id", "x_custom")
+                .attr("transform", `translate(0, ${height_custom})`);
+
+            gx.transition()
+                .duration(750)
+                .call(d3.axisBottom(x_custom));
+
+        } else {
+
+            d3.select("#y_custom").remove();
+
+            if(custom_graph_trans['y'].scale === 'linear') {
+                y_custom = d3.scaleLinear()
+                    .domain(d3.extent(data_light, d => d[custom_graph_trans['y'].data]))
+                    .range([0, height_custom]);
+            } else {
+                y_custom = d3.scaleLog()
+                    .domain(d3.extent(data_light, d => d[custom_graph_trans['y'].data]))
+                    .range([0, height_custom]);
+            }
+
+            let gx = svg_light_custom.append("g")
+                .attr("id", "y_custom");
+
+            gx.transition()
+                .duration(750)
+                .call(d3.axisLeft(y_custom));
+
+        }
+    }
+
+    svg_light_custom.selectAll("circle")
+        .data(data_light)
+        .transition()
+        .duration(750)
+        .attr("cx", function (d) { return x_custom(d[custom_graph_trans['x'].data]); } )
+        .attr("cy", function (d) { return y_custom(d[custom_graph_trans['y'].data]); } )
 
 }

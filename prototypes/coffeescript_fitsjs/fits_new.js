@@ -524,8 +524,18 @@
             // Determine the data unit type (e.g IMAGE, BINTABLE, TABLE, COMPRESSED)
             getDataType() {
 
+                console.log("Data type setup");
+
+                console.log(this.extensionType);
+
+                console.log(this.cards['XTENSION'].value);
+
+                this.extensionType = this.cards['XTENSION'].value;
+
                 switch (this.extensionType) {
                     case 'BINTABLE':
+
+                        console.log("BINTABLE");
 
                         if (this.contains('ZIMAGE')) {
                             return 'CompressedImage';

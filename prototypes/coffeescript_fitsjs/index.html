@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="fits.js"></script>
+    <script src="fits_new.js"></script>
 </head>
 
 <body>
@@ -17,8 +17,18 @@
             let header = hdu.header;
             let data = hdu.data;
 
-            console.log(header);
+            let axis;
+
+            //console.log(data.getColumns(header));
+            //console.log(header);
+            console.log(data.getColumn("RATE", col));
+
+            //console.log(header);
             console.log(data)
+        }
+
+        function col(col) {
+            console.log(col)
         }
 
         let fits = new FITS(fp, callback);

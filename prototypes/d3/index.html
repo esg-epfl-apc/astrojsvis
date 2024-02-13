@@ -51,7 +51,22 @@
 
     <div id="vis_light_curve_custom" class="graph_container">
         <div id="graph_container_custom"></div>
-        <div id="graph_controls_custom"></div>
+        <div id="graph_controls_custom">
+            <label for="data_x">Data for x :</label>
+            <select id="data_x" data-axis="x"></select>
+            <label for="data_y">Data for y :</label>
+            <select id="data_y" data-axis="y"></select>
+            <label for="scale_x">Scale for x :</label>
+            <select id="scale_x" data-axis="x">
+                <option value="linear">Linear</option>
+                <option value="log">Log</option>
+            </select>
+            <label for="scale_y">Scale for y :</label>
+            <select id="scale_y" data-axis="y">
+                <option value="linear">Linear</option>
+                <option value="log">Log</option>
+            </select>
+        </div>
     </div>
 
 </body>
