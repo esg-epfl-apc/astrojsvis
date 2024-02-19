@@ -579,6 +579,9 @@ function setGraph() {
             graphLog();
             graphZoom();
             graphCustomAxis();
+            graphMain();
+            graphTest();
+            graphDemo();
 
         });
 
@@ -877,46 +880,58 @@ function graphZoom() {
     let width_zoom = container.offsetWidth * 0.5;
     let height_zoom = container.offsetHeight * 0.5;
 
+    let x_zoom;
+
+    let gx;
+    let gy;
+
+    //const extent = [[margin_zoom.left, margin_zoom.top], [width_zoom - margin_zoom.right, height_zoom - margin_zoom.top]];
+
     let zoom = d3.zoom()
         .on('zoom', function(e) {
-
             console.log(e.transform);
-
-            d3.select('#light-curve-svg-zoom g')
+            d3.select('#light-curve-svg-zoom')
                 .attr("transform", e.transform)
         })
-        .scaleExtent([1,2])
-        .translateExtent([[1,1],[
-            width_zoom - 70,
-            height_zoom + 40]])
+        .scaleExtent([1,10])
+        .translateExtent([[0,0],[
+            width_zoom,
+            height_zoom]])
 
     const svg_light_zoom = d3.select("#graph_container_zoom")
         .append("svg")
         .attr("id", "light-curve-svg-zoom")
-        .attr("width", width_zoom + 70)
-        .attr("height", height_zoom + 40)
+        .attr("width", width_zoom)
+        .attr("height", height_zoom)
         .append("g")
         .attr("transform",
             `translate(${margin_zoom.left}, ${margin_zoom.top})`);
 
-    let x_zoom = d3.scaleLinear()
+    x_zoom = d3.scaleLinear()
         .domain([scale_light.x_min, scale_light.x_max])
-        .range([0, width_zoom]);
+        .range([0, width_zoom - margin_zoom.left - margin_zoom.right]);
 
-    svg_light_zoom.append("g")
+    const xAxis = (g, x_zoom) => g
+        .call(d3.axisBottom(x_zoom).tickFormat(d3.format(".1f")))
+
+    gx = svg_light_zoom.append("g")
         .attr("id", "x_zoom")
-        .attr("transform", `translate(0, ${height_zoom})`)
-        .call(d3.axisBottom(x_zoom)
-            .tickFormat(d3.format(".1f")))
+        .attr("transform", `translate(0, ${height_zoom - margin_zoom.bottom - margin_zoom.top})`)
+        //.call(xAxis, x_zoom)
         .call(g => g.selectAll(".tick line").clone()
             .attr("y2", -height_zoom)
+            .attr("stroke-opacity", 0.2))
+        .call(d3.axisBottom(x_zoom)
+        .tickFormat(d3.format(".1f")))
+        .call(g => g.selectAll(".tick line").clone()
+            .attr("y2", width_zoom)
             .attr("stroke-opacity", 0.2));
 
     let y_zoom = d3.scaleLinear()
         .domain([scale_light.y_min, scale_light.y_max])
-        .range([height_zoom, 0]);
+        .range([height_zoom - margin_zoom.bottom - margin_zoom.top, 0]);
 
-    svg_light_zoom.append("g")
+    gy = svg_light_zoom.append("g")
         .call(d3.axisLeft(y_zoom)
             .tickFormat(d3.format(".1f")))
         .call(g => g.selectAll(".tick line").clone()
@@ -1181,5 +1196,444 @@ function updateData(type, axis) {
         .duration(750)
         .attr("cx", function (d) { return x_custom(d[custom_graph_trans['x'].data]); } )
         .attr("cy", function (d) { return y_custom(d[custom_graph_trans['y'].data]); } )
+
+}
+
+/*
+const height_main = 600;
+const width_main = 800;
+
+let k = height_main / width_main;
+
+const zoom_main = d3.zoom()
+    .scaleExtent([0.5, 32])
+    .on("zoom", zoomed_main);
+
+const svg_main = d3.create("svg")
+    .attr("viewBox", [0, 0, width_main, height_main]);
+
+const gGrid = svg_main.append("g");
+
+const gDot = svg_main.append("g")
+    .attr("fill", "none")
+    .attr("stroke-linecap", "round");
+
+const gx = svg_main.append("g");
+
+const gy = svg_main.append("g");
+
+let x_main = d3.scaleLinear()
+    .domain([70000, 90000])
+    .range([0, width_main])
+
+let y_main = d3.scaleLinear()
+    .domain([52777.1 * k, 52777.2])
+    .range([height_main, 0])
+
+let z_main = d3.scaleOrdinal()
+    .domain(data_light.map(d => d[2]))
+    .range(d3.schemeCategory10)
+
+let xAxis_main = (g, x_main) => g
+    .attr("transform", `translate(0,${height_main})`)
+    .call(d3.axisTop(x_main).ticks(12))
+    .call(g => g.select(".domain").attr("display", "none"))
+
+let yAxis_main = (g, y_main) => g
+    .call(d3.axisRight(y_main).ticks(12 * k))
+    .call(g => g.select(".domain").attr("display", "none"))
+
+let grid = (g, x_main, y_main) => g
+    .attr("stroke", "currentColor")
+    .attr("stroke-opacity", 0.1)
+    .call(g => g
+        .selectAll(".x")
+        .data(x.ticks(12))
+        .join(
+            enter => enter.append("line").attr("class", "x").attr("y2", height_main),
+            update => update,
+            exit => exit.remove()
+        )
+        .attr("x1", d => 0.5 + x_main(d))
+        .attr("x2", d => 0.5 + x_main(d)))
+    .call(g => g
+        .selectAll(".y")
+        .data(y_main.ticks(12 * k))
+        .join(
+            enter => enter.append("line").attr("class", "y").attr("x2", width_main),
+            update => update,
+            exit => exit.remove()
+        )
+        .attr("y1", d => 0.5 + y_main(d))
+        .attr("y2", d => 0.5 + y_main(d)));
+
+function zoomed_main({transform}) {
+    const zx = transform.rescaleX(x_main).interpolate(d3.interpolateRound);
+    const zy = transform.rescaleY(y_main).interpolate(d3.interpolateRound);
+    gDot.attr("transform", transform).attr("stroke-width", 5 / transform.k);
+    gx.call(xAxis_main, zx);
+    gy.call(yAxis_main, zy);
+    gGrid.call(grid, zx, zy);
+}
+
+function graphMain() {
+
+    gDot.selectAll("path")
+        .data(data_light)
+        .join("path")
+        .attr("d", d => `M${x_main(d[2])},${y_main(d[0])}h0`)
+
+    let svg_light_main = d3.select("#vis_light_curve_zoom")
+        .append(svg_main)
+
+    svg_main.call(zoom_main).call(zoom_main.transform, d3.zoomIdentity);
+
+
+    return Object.assign(svg.node(), {
+        reset() {
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity);
+        }
+    });
+
+}
+*/
+
+function graphMain() {
+
+}
+
+function graphTest() {
+
+    let data = Array.from({ length: 20 }, (_, i) => ({
+        x: Math.random() * 100,
+        y: Math.random() * 100
+    }));
+
+    const margin = { top: 20, right: 20, bottom: 20, left: 50 };
+    const width = 400 - margin.left - margin.right;
+    const height = 200 - margin.top - margin.bottom;
+
+    let container = document.getElementById('graph_container_test');
+
+    let width_custom = container.offsetWidth;
+    let height_custom = container.offsetHeight;
+
+    let svg = d3.select("#graph_container_test")
+        .append("svg")
+        .attr("id", "light-curve-svg-test")
+        .attr("width", width_custom)
+        .attr("height", height_custom)
+        .append("g")
+        .attr("transform",
+            `translate(${margin.left}, ${margin.top})`);
+
+
+    /*
+    const svg = d3.select("#scatter-plot")
+        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    */
+
+    let currentScaleType = 'linear';
+
+
+    let xScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.x)])
+        .range([0, width]);
+
+    let yScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.y)])
+        .range([height, 0]);
+
+
+    /*
+    let xScale = d3.scaleLinear()
+        .domain(d3.extent(data))
+        .range([0, width]);
+
+    let yScale = d3.scaleLinear()
+        .domain(d3.extent(data))
+        .range([height, 0]);
+
+    */
+
+    let xAxis = d3.axisBottom(xScale);
+    let yAxis = d3.axisLeft(yScale);
+
+    // Add axes to SVG
+    const xAxisGroup = svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${height})`)
+        .call(xAxis);
+
+    const yAxisGroup = svg.append("g")
+        .attr("class", "y-axis")
+        .call(yAxis);
+
+    // Add data points
+    let dots = svg.selectAll(".dot")
+        .data(data)
+        .enter().append("circle")
+        .attr("class", "dot")
+        .attr("cx", d => xScale(d.x))
+        .attr("cy", d => yScale(d.y))
+        .attr("r", 5);
+
+    const zoom_test = d3.zoom()
+        .on('zoom', function(e) {
+            console.log(e.transform);
+
+            const { transform } = e;
+            //svg.attr("transform", transform);
+
+            d3.select("#light-curve-svg-test g").attr("transform", transform);
+            xAxisGroup.call(xAxis.scale(transform.rescaleX(xScale)));
+            yAxisGroup.call(yAxis.scale(transform.rescaleY(yScale)));
+
+            svg.selectAll("circle")
+                .data(data)
+                .transition()
+                .duration(750)
+                .attr("cx", d => xScale(d.x))
+                .attr("cy", d => yScale(d.y))
+        })
+        .scaleExtent([1, 10])
+        .translateExtent([[0, 0], [width, height]])
+
+
+    const zoom_test_1 = d3.zoom()
+        .on('zoom', zoomed)
+        .scaleExtent([1, 10])
+        .translateExtent([[0, 0], [width, height]])
+
+    d3.select("#light-curve-svg-test").call(zoom_test_1);
+
+    //svg.call(zoom_test);
+
+
+    function zoomed(event) {
+
+        console.log('aaaaa');
+
+        const { transform } = event;
+        svg.attr("transform", transform);
+        //xAxisGroup.call(xAxis.scale(transform.rescaleX(xScale)));
+        //yAxisGroup.call(yAxis.scale(transform.rescaleY(yScale)));
+
+        const new_xScale = transform.rescaleX(xScale);
+        const new_yScale = transform.rescaleY(yScale);
+
+        // Update axes with the new scales
+        svg.select(".x-axis").call(xAxis.scale(new_xScale));
+        svg.select(".y-axis").call(yAxis.scale(new_yScale));
+
+        svg.selectAll("circle")
+            .data(data)
+            .transition()
+            .duration(750)
+            .attr("cx", d => xScale(d.x))
+            .attr("cy", d => yScale(d.y))
+
+        /*
+        dots.transition().duration(750)
+            .attr("cx", d => xScale(d.x))
+            .attr("cy", d => yScale(d.y));
+        */
+    }
+
+
+    function switchScaleType() {
+
+        currentScaleType = currentScaleType === 'linear' ? 'log' : 'linear';
+
+        xScale = currentScaleType === 'linear' ? d3.scaleLinear() : d3.scaleLog();
+        yScale = currentScaleType === 'linear' ? d3.scaleLinear() : d3.scaleLog();
+
+        xScale.domain([0, d3.max(data, d => d.x)]).range([0, width]);
+        yScale.domain([0, d3.max(data, d => d.y)]).range([height, 0]);
+
+        xAxis = d3.axisBottom(xScale);
+        yAxis = d3.axisLeft(yScale);
+
+        xAxisGroup.transition().call(xAxis);
+        yAxisGroup.transition().call(yAxis);
+
+        dots.transition().duration(750)
+            .attr("cx", d => xScale(d.x))
+            .attr("cy", d => yScale(d.y));
+    }
+}
+
+
+function graphDemo() {
+
+    const margin = {top: 50, right: 30, bottom: 30, left: 60},
+        width = 1000,
+        height = 450;
+
+    const svg_demo = d3.select("#graph_container_demo")
+        .append("svg")
+        .attr("id", "svg-demo")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            `translate(${margin.left}, ${margin.top})`);
+
+    const zoom_test = d3.zoom()
+        .on('zoom', function(e) {
+            console.log(e.transform);
+
+            const { transform } = e;
+            //svg_demo.attr("transform", transform);
+
+            d3.select("svg-demo g").attr("transform", transform);
+
+            //xAxisGroup.call(xAxis.scale(transform.rescaleX(xScale)));
+            //yAxisGroup.call(yAxis.scale(transform.rescaleY(yScale)));
+
+            svg_demo.selectAll("circle")
+                .data(data_demo)
+                .transition()
+                .duration(750)
+                .attr("cx", function (d) { return x_demo(d.time); } )
+                .attr("cy", function (d) { return y_demo(d.rate); } )
+        })
+        .scaleExtent([1, 10])
+        .translateExtent([[0, 0], [width, height]])
+
+    let data_demo = data_light;
+
+    let error_bars = processData(data_demo);
+
+    let error_bars_time = processDataTime(data_demo);
+
+    let scale = getScale(data_demo);
+
+    scale_light = scale;
+
+    console.log(scale);
+
+    let x_demo = d3.scaleLinear()
+        .domain([scale.x_min, scale.x_max])
+        .range([0, width]);
+
+    svg_demo.append("g")
+        .attr("id", "xaxis_demo")
+        .attr("transform", `translate(0, ${height})`)
+        .call(d3.axisBottom(x_demo)
+            .tickFormat(d3.format(".6f")))
+        .call(g => g.selectAll(".tick line").clone()
+            .attr("y2", -height)
+            .attr("stroke-opacity", 0.2));
+
+    let y_demo = d3.scaleLinear()
+        .domain([scale.y_min, scale.y_max])
+        .range([height, 0]);
+
+    console.log(y_demo.ticks());
+
+    svg_demo.append("g")
+        .attr("id", "yaxis_demo")
+        .call(d3.axisLeft(y_demo)
+            .tickFormat(d3.format(".1f")))
+        .call(g => g.selectAll(".tick line").clone()
+            .attr("x2", width)
+            .attr("stroke-opacity", 0.2));
+
+    svg_demo.append('g').attr("id", "light_demo")
+        .selectAll("dot")
+        .data(data_demo)
+        .enter()
+        .append("circle")
+        .attr("cx", function (d) { return x_demo(d.time); } )
+        .attr("cy", function (d) { return y_demo(d.rate); } )
+        .attr("r", 5)
+        .style("fill", "black")
+        .style("opacity", 1)
+        .style("stroke", "white")
+
+    svg_demo.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2 - margin.right)
+        .attr("y", 0 - margin.bottom)
+        .style("font-size", "24px")
+        .style("font-weight", "bold")
+        .style("fill", "black")
+        .text("Light Curve");
+
+    svg_demo.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0)
+        .attr("x", 0 - margin.bottom)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .style("fill", "black")
+        .text("Rate");
+
+    svg_demo.append('g').call(g => g.append("text")
+        .attr("x", width - 5)
+        .attr("y", height - 5)
+        .attr("font-weight", "bold")
+        .attr("text-anchor", "end")
+        .attr("fill", "black")
+        .text("Time"));
+
+    svg_demo.append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+        .call(zoom_test);
+
+    let line = d3.line()
+        .curve(d3.curveCatmullRom)
+        .x(d => x_demo(d.time))
+        .y(d => y_demo(d.rate));
+
+    d3.select("light_demo")
+        .append("path")
+        .attr("fill", "none").attr("stroke", "black")
+        .attr("d", line(data_demo));
+
+    const data_line = svg_demo.append("path")
+        .attr("fill", "none")
+        .attr("stroke", "black")
+        .attr("stroke-width", 1.5)
+        .attr("d", line(data_demo));
+
+    let line_error_bar = d3.line()
+        .x(d => x_demo(d.time))
+        .y(d => y_demo(d.rate_bound));
+
+    error_bars.forEach(function(error_bar) {
+        svg_demo.append("path")
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr("d", line_error_bar(error_bar));
+    })
+
+    let line_error_bar_time = d3.line()
+        .x(d => x_demo(d.time_bound))
+        .y(d => y_demo(d.rate));
+
+    error_bars_time.forEach(function(error_bar_time) {
+        svg_demo.append("path")
+            .attr("fill", "none")
+            .attr("id", "time-error-bar-demo")
+            .attr("stroke", "red")
+            .attr("stroke-width", 1.5)
+            .attr("d", line_error_bar_time(error_bar_time));
+    })
+
+    //createOverview();
+
+    //d3.select("svg-demo g").call(zoom_test);
 
 }
