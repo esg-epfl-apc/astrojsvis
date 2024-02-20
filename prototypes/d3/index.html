@@ -5,6 +5,32 @@
     <title>Graphs</title>
     <script src="js/d3.v7.js"></script>
     <script src="js/graph.js"></script>
+    <style>
+        .graph_container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2%;
+            margin: 2%;
+        }
+
+        .graph_container div {
+            height: 400px;
+            border: 1px solid black;
+            padding: 1%;
+        }
+
+        .graph_container_full {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 2%;
+            margin: 2%;
+        }
+
+        .graph_container_full div {
+            height: 500px;
+        }
+
+    </style>
 </head>
 <body onload="setGraph()">
 
@@ -15,6 +41,244 @@
     <div id="vis"></div>
 
     <div id="vis_light_curve"></div>
+
+    <div id="data-div"></div>
+
+    <div id="vis_light_curve_log_scale" class="graph_container">
+        <div id="graph_container_log"></div>
+        <div id="graph_controls_log">
+            <button id="btn_switch_scale">
+                Switch scale
+            </button>
+        </div>
+    </div>
+
+    <div id="vis_light_curve_zoom" class="graph_container">
+        <div id="graph_container_zoom"></div>
+        <div id="graph_controls_zoom">
+
+        </div>
+    </div>
+
+    <div id="vis_light_curve_custom" class="graph_container">
+        <div id="graph_container_custom"></div>
+        <div id="graph_controls_custom">
+            <label for="data_x">Data for x :</label>
+            <select id="data_x" data-axis="x"></select>
+            <label for="data_y">Data for y :</label>
+            <select id="data_y" data-axis="y"></select>
+            <label for="scale_x">Scale for x :</label>
+            <select id="scale_x" data-axis="x">
+                <option value="linear">Linear</option>
+                <option value="log">Log</option>
+            </select>
+            <label for="scale_y">Scale for y :</label>
+            <select id="scale_y" data-axis="y">
+                <option value="linear">Linear</option>
+                <option value="log">Log</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="vis_light_curve_full" class="graph_container_full">
+        <div></div>
+        <div></div>
+    </div>
+
+    <div id="vis_light_curve_test" class="graph_container_full">
+        <div id="graph_container_test"></div>
+        <div></div>
+    </div>
+
+    <div id="vis_light_curve_demo" class="graph_container_full">
+        <div id="graph_container_demo"></div>
+        <div></div>
+    </div>
+
+    <div id="graph_container"></div>
+
+    <div id="graph_controls_demo">
+        <label for="data_x_demo">Data for x :</label>
+        <select id="data_x_demo" data-axis="x"></select>
+        <label for="data_y_demo">Data for y :</label>
+        <select id="data_y_demo" data-axis="y"></select>
+        <label for="scale_x_demo">Scale for x :</label>
+        <select id="scale_x_demo" data-axis="x">
+            <option value="linear">Linear</option>
+            <option value="log">Log</option>
+        </select>
+        <label for="scale_y_demo">Scale for y :</label>
+        <select id="scale_y_demo" data-axis="y">
+            <option value="linear">Linear</option>
+            <option value="log">Log</option>
+        </select>
+    </div>
+
+    <script>
+
+        let margin = {top: 10, right: 30, bottom: 30, left: 60},
+            width = 1000 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
+
+        let svg = d3.select("#graph_container")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        d3.csv("/data_sample/data_fullset.csv").then(function(data) {
+
+            let error_bars = processData(data);
+
+            let error_bars_time = processDataTime(data);
+
+            let x = d3.scaleLinear()
+                .domain(d3.extent(data, d => d.time))
+                .range([ 0, width ]);
+
+            let xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+            let y = d3.scaleLinear()
+                .domain(d3.extent(data, d => d.rate))
+                .range([ height, 0]);
+
+            let ylog = d3.scaleLog()
+                .domain([1, d3.max(data, d => d.rate)])
+                .range([ height, 0]);
+
+            let yAxis = svg.append("g")
+                .call(d3.axisLeft(y));
+
+            let clip = svg.append("defs").append("SVG:clipPath")
+                .attr("id", "clip")
+                .append("SVG:rect")
+                .attr("width", width )
+                .attr("height", height )
+                .attr("x", margin.bottom)
+                .attr("y", margin.left);
+
+            let scatter = svg.append('g')
+                .attr("clip-path", "url(#clip)")
+                .attr("id", "light-data")
+
+            scatter
+                .attr("id", "light-data")
+                .selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("cx", function (d) { return x(d.time); } )
+                .attr("cy", function (d) { return y(d.rate); } )
+                .attr("r", 6)
+                .style("fill", "#000000")
+                .style("opacity", 0.5)
+
+            let zoom = d3.zoom()
+                .scaleExtent([.5, 20])
+                .extent([[0, 0], [width, height]])
+                .on("zoom", updateChart);
+
+            svg.append("rect")
+                .attr("width", width)
+                .attr("height", height)
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+                .call(zoom);
+
+            let line = d3.line()
+                .curve(d3.curveCatmullRom)
+                .x(d => x(d.time))
+                .y(d => y(d.rate));
+
+            let path = svg.append("path")
+                .attr("id", "light-path")
+                .attr("fill", "none").attr("stroke", "steelblue")
+                .attr("d", line(data));
+
+            let line_error_bar = d3.line()
+                .x(d => x(d.time))
+                .y(d => y(d.rate_bound));
+
+            error_bars.forEach(function(error_bar) {
+                svg.append("path")
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line_error_bar(error_bar));
+            })
+
+            let line_error_bar_time = d3.line()
+                .x(d => x(d.time_bound))
+                .y(d => y(d.rate));
+
+            error_bars_time.forEach(function(error_bar_time) {
+                svg.append("path")
+                    .attr("fill", "none")
+                    .attr("id", "time-error-bar")
+                    .attr("stroke", "red")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line_error_bar_time(error_bar_time));
+            })
+
+            function updateChart(e) {
+
+                let newX = e.transform.rescaleX(x);
+                let newY = e.transform.rescaleY(y);
+
+                xAxis.call(d3.axisBottom(newX))
+                yAxis.call(d3.axisLeft(newY))
+
+                d3.selectAll("path").remove();
+
+                scatter
+                    .selectAll("circle")
+                    .attr('cx', function(d) {return newX(d.time)})
+                    .attr('cy', function(d) {return newY(d.rate)});
+
+                let line = d3.line()
+                    .curve(d3.curveCatmullRom)
+                    .x(d => newX(d.time))
+                    .y(d => newY(d.rate));
+
+                svg.append("path")
+                    .attr("id", "light-path")
+                    .attr("fill", "none").attr("stroke", "steelblue")
+                    .attr("d", line(data));
+
+                let line_error_bar = d3.line()
+                    .x(d => newX(d.time))
+                    .y(d => newY(d.rate_bound));
+
+                error_bars.forEach(function(error_bar) {
+                    svg.append("path")
+                        .attr("fill", "none")
+                        .attr("stroke", "steelblue")
+                        .attr("stroke-width", 1.5)
+                        .attr("d", line_error_bar(error_bar));
+                })
+
+                let line_error_bar_time = d3.line()
+                    .x(d => newX(d.time_bound))
+                    .y(d => newY(d.rate));
+
+                error_bars_time.forEach(function(error_bar_time) {
+                    svg.append("path")
+                        .attr("fill", "none")
+                        .attr("id", "time-error-bar")
+                        .attr("stroke", "red")
+                        .attr("stroke-width", 1.5)
+                        .attr("d", line_error_bar_time(error_bar_time));
+                })
+
+            }
+
+        });
+    </script>
 
 </body>
 </html>

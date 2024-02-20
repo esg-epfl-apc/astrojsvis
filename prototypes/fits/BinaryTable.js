@@ -115,6 +115,7 @@ class BinaryTable {
 
             let i = 0
             let curr_offset = j * this.row_size_byte;
+            let data_row = [];
 
             for(i; i < this.nb_col; i++) {
 
@@ -123,9 +124,10 @@ class BinaryTable {
                 let val = this.getValueFromType(dataview, col_metadata.type, curr_offset)
                 curr_offset += BinaryTable.#offset_table[col_metadata.type];
 
-                data.push(val);
+                data_row.push(val);
             }
 
+            data.push(data_row);
             j++;
         }
 
