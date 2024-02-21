@@ -85,7 +85,7 @@ const showPlot = function() {
         
         const TOOLTIPS = [
             ["index", "$index"],
-            ["TIME", "@x"],
+            ["TIME", "@x{0.000}"],
             ["RATE", "@y\u00B1@dy"]
         ]
         hvr = new Bokeh.HoverTool({tooltips: TOOLTIPS, mode: "vline"})
