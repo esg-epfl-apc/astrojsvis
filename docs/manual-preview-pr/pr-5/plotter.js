@@ -35,7 +35,7 @@ const showPlot = function() {
             }
         });
 
-        const tools = "pan,box_zoom,box_select,wheel_zoom,hover,crosshair,reset,save";
+        const tools = "pan,box_zoom,box_select,wheel_zoom,crosshair,reset,save";
         const p = plt.figure({ 
             title: "Lightcurve", 
             tools: tools,
@@ -82,7 +82,16 @@ const showPlot = function() {
             columns: columns,
             width: 800,
         });
-
+        
+        const TOOLTIPS = [
+            ["index", "$index"],
+            ["TIME", "@x"],
+            ["RATE", "@y\u00B1@dy"]
+        ]
+        hvr = new Bokeh.HoverTool({tooltips: TOOLTIPS, mode: "vline"})
+        hvr.renderers = [xb]
+        p.add_tools(hvr)
+        
         // show the plot
         plt.show(new Bokeh.Column({children: [p, data_table]}), "#plot_container");
     }
