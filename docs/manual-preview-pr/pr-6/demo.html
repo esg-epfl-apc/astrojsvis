@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3 light curve demo</title>
+    <script src="js/d3.v7.js"></script>
+    <style>
+
+    </style>
+</head>
+<body>
+
+<div id="graph_container"></div>
+
+<div id="graph_controls_demo">
+    <label for="data_x_demo">Data for x :</label>
+    <select id="data_x_demo" data-axis="x"></select>
+    <label for="data_y_demo">Data for y :</label>
+    <select id="data_y_demo" data-axis="y"></select>
+    <label for="scale_x_demo">Scale for x :</label>
+    <select id="scale_x_demo" data-axis="x">
+        <option value="linear">Linear</option>
+        <option value="log">Log</option>
+    </select>
+    <label for="scale_y_demo">Scale for y :</label>
+    <select id="scale_y_demo" data-axis="y">
+        <option value="linear">Linear</option>
+        <option value="log">Log</option>
+    </select>
+</div>
+
+<script>
+
+    let scaleType = 'linear';
+
+    let demo_graph_trans = {
+        'x': {'data': 'time', 'scale': 'linear'},
+        'y': {'data': 'rate', 'scale': 'linear'}
+    }
+
+    let margin = {top: 10, right: 30, bottom: 30, left: 60},
+        width = 1000 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    let svg = d3.select("#graph_container")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("data_fullset.csv").then(function(data) {
+
+        setupDataControls(data);
+
+        document.getElementById("data_x_demo").addEventListener("change", (e) => dataListenerDemo(e));
+        document.getElementById("data_y_demo").addEventListener("change", (e) => dataListenerDemo(e));
+
+        document.getElementById("scale_x_demo").addEventListener("change", (e) => scaleListenerDemo(e));
+        document.getElementById("scale_y_demo").addEventListener("change", (e) => scaleListenerDemo(e));
+
+        let error_bars = processData(data);
+
+        let error_bars_time = processDataTime(data);
+
+        let x = d3.scaleLinear()
+            .domain(d3.extent(data, d => d.time))
+            .range([ 0, width ]);
+
+        let xAxis = svg.append("g")
+            .attr("id", "x_demo")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x)
+                .tickFormat(d3.format(".1f")))
+            .call(g => g.selectAll(".tick line").clone()
+                .attr("class", "tick-line")
+                .attr("y2", -height)
+                .attr("stroke-opacity", 0.2))
+
+        let y = d3.scaleLinear()
+            .domain(d3.extent(data, d => d.rate))
+            .range([ height, 0]);
+
+        let ylog = d3.scaleLog()
+            .domain([1, d3.max(data, d => d.rate)])
+            .range([ height, 0]);
+
+        let yAxis = svg.append("g")
+            .attr("id", "y_demo")
+            .call(d3.axisLeft(y)
+                .tickFormat(d3.format(".1f")))
+            .call(g => g.selectAll(".tick line").clone()
+                .attr("x2", width)
+                .attr("stroke-opacity", 0.2));
+
+        yAxis.select(".tick:last-of-type text").clone()
+            .attr("id", "y-label")
+            .attr("x", 3)
+            .attr("y", -5)
+            .attr("text-anchor", "start")
+            .attr("font-weight", "bold")
+            .text("Rate");
+
+        xAxis.select(".tick:last-of-type text").clone()
+            .attr("id", "y-label")
+            .attr("y", -11)
+            .attr("x", 2)
+            .attr("text-anchor", "start")
+            .attr("font-weight", "bold")
+            .text("Time");
+
+        let clip = svg.append("defs").append("SVG:clipPath")
+            .attr("id", "clip")
+            .append("SVG:rect")
+            .attr("width", width )
+            .attr("height", height )
+            .attr("x", 0)
+            .attr("y", 0);
+
+        let tooltip = d3.select("#graph_container")
+            .append("div")
+            .attr("class", "tooltip_details")
+            .style("float", "right")
+            .style("width", "max-content")
+            .style("height", "max-content")
+            .style("margin-top", "100px")
+            .style("margin-right", "169px")
+            .style("border", "1px solid black")
+            .style("padding", "5px")
+            .style("display", "none");
+
+        let scatter = svg.append('g')
+            .attr("clip-path", "url(#clip)")
+            .attr("id", "light-data")
+
+        scatter
+            .selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", function (d) { return x(d.time); } )
+            .attr("cy", function (d) { return y(d.rate); } )
+            .attr("r", 4)
+            .style("fill", "transparent")
+            .style("stroke", "black")
+            .style("opacity", 1)
+            .on("mouseover", function(e) {
+                console.log(e);
+
+                let object_data = e.originalTarget.__data__;
+
+                tooltip
+                    .style("display", "block")
+                    .html('<span>Rate: '+object_data.rate+'</span>' +
+                        '<br><span>Time: '+object_data.time+'</span><br>' +
+                        '<br><span>Rate min: <br>'+(parseFloat(object_data.rate) - parseFloat(object_data.rate_error))+'</span>' +
+                        '<br><span>Rate max: <br>'+(parseFloat(object_data.rate) + parseFloat(object_data.rate_error))+'</span>' +
+                        '<br><span>Time min: <br>'+(parseFloat(object_data.time) - parseFloat(object_data.time_error))+'</span>' +
+                        '<br><span>Time max: <br>'+(parseFloat(object_data.time) + parseFloat(object_data.time_error))+'</span>'
+                    )
+
+            })
+            .on("mouseout", function(e) {
+                tooltip.style("display", "none");
+            })
+
+        let zoom = d3.zoom()
+            .scaleExtent([.5, 20])
+            .extent([[0, 0], [width, height]])
+            .on("zoom", updateChart);
+
+        svg.append("rect")
+            .attr("width", width)
+            .attr("height", height)
+            .style("fill", "none")
+            .style("pointer-events", "all")
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+            .call(zoom);
+
+        let line = d3.line()
+            .curve(d3.curveCatmullRom)
+            .x(d => x(d.time))
+            .y(d => y(d.rate));
+
+        let line_container = svg.append("g")
+            .attr("id", "path-container")
+            .attr("clip-path", "url(#clip)");
+
+        let path = line_container.append("path")
+            .attr("id", "light-path")
+            .attr("fill", "none").attr("stroke", "steelblue")
+            .attr("d", line(data));
+
+        let error_bars_container = svg.append("g")
+            .attr("clip-path", "url(#clip)");
+
+        let line_error_bar = d3.line()
+            .x(d => x(d.time))
+            .y(d => y(d.rate_bound));
+
+        error_bars.forEach(function(error_bar) {
+            error_bars_container.append("path")
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", line_error_bar(error_bar));
+        })
+
+        let line_error_bar_time = d3.line()
+            .x(d => x(d.time_bound))
+            .y(d => y(d.rate));
+
+        error_bars_time.forEach(function(error_bar_time) {
+            error_bars_container.append("path")
+                .attr("fill", "none")
+                .attr("id", "time-error-bar")
+                .attr("stroke", "red")
+                .attr("stroke-width", 1.5)
+                .attr("d", line_error_bar_time(error_bar_time));
+        })
+
+        //xAxis.raise();
+        //yAxis.raise();
+
+        scatter.raise();
+
+        function updateChart(e) {
+
+            console.log(e);
+
+            let newX = e.transform.rescaleX(x);
+            let newY = e.transform.rescaleY(y);
+
+            xAxis.call(d3.axisBottom(newX));
+            yAxis.call(d3.axisLeft(newY));
+
+            svg.selectAll(".tick-line").remove();
+            svg.selectAll("#y-label").remove();
+
+            xAxis.selectAll(".tick line").clone()
+                .attr("class", "tick-line")
+                .attr("y2", -height)
+                .attr("stroke-opacity", 0.2)
+
+            yAxis.select(".tick:last-of-type text").clone()
+                .attr("id", "y-label")
+                .attr("x", 3)
+                .attr("y", -5)
+                .attr("text-anchor", "start")
+                .attr("font-weight", "bold")
+                .text(demo_graph_trans['y'].data.toUpperCase());
+
+            xAxis.select(".tick:last-of-type text").clone()
+                .attr("id", "y-label")
+                .attr("y", -11)
+                .attr("x", 2)
+                .attr("text-anchor", "start")
+                .attr("font-weight", "bold")
+                .text(demo_graph_trans['x'].data.toUpperCase());
+
+            yAxis.selectAll(".tick line").clone()
+                .attr("class", "tick-line")
+                .attr("x2", width)
+                .attr("stroke-opacity", 0.2)
+
+            svg.selectAll("path").remove();
+
+            scatter
+                .selectAll("circle")
+                .data(data)
+                .attr('cx', function(d) {return newX(d[demo_graph_trans['x'].data])})
+                .attr('cy', function(d) {return newY(d[demo_graph_trans['y'].data])});
+
+            let line = d3.line()
+                .curve(d3.curveCatmullRom)
+                .x(d => newX(d.time))
+                .y(d => newY(d.rate));
+
+            line_container.append("path")
+                .attr("id", "light-path")
+                .attr("fill", "none").attr("stroke", "steelblue")
+                .attr("d", line(data));
+
+            let line_error_bar = d3.line()
+                .x(d => newX(d.time))
+                .y(d => newY(d.rate_bound));
+
+            error_bars.forEach(function(error_bar) {
+                error_bars_container.append("path")
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line_error_bar(error_bar));
+            })
+
+            let line_error_bar_time = d3.line()
+                .x(d => newX(d.time_bound))
+                .y(d => newY(d.rate));
+
+            error_bars_time.forEach(function(error_bar_time) {
+                error_bars_container.append("path")
+                    .attr("fill", "none")
+                    .attr("id", "time-error-bar")
+                    .attr("stroke", "red")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line_error_bar_time(error_bar_time));
+            })
+
+        }
+
+        function processData(data) {
+            let error_bars = [];
+
+            data.forEach(function(datapoint){
+                //console.log(datapoint.rate + ' ' + datapoint.rate_error + ' '+ parseFloat(datapoint.rate - datapoint.rate_error) + ' ' + parseFloat(datapoint.rate + datapoint.rate_error))
+                let error_bar = [
+                    {
+                        rate_bound: parseFloat(datapoint.rate) - parseFloat(datapoint.rate_error),
+                        time: parseFloat(datapoint.time)
+                    },
+                    {
+                        rate_bound: parseFloat(datapoint.rate) + parseFloat(datapoint.rate_error),
+                        time: parseFloat(datapoint.time)
+                    }
+                ]
+
+                error_bars.push(error_bar);
+            })
+
+            return error_bars;
+        }
+
+        function processDataTime(data) {
+            let error_bars = [];
+
+            data.forEach(function(datapoint){
+                console.log(datapoint.rate + ' ' + datapoint.rate_error + ' '+ parseFloat(datapoint.rate - datapoint.rate_error) + ' ' + parseFloat(datapoint.rate + datapoint.rate_error))
+                let error_bar = [
+                    {
+                        time_bound: parseFloat(datapoint.time) - parseFloat(datapoint.time_error),
+                        rate: parseFloat(datapoint.rate)
+                    },
+                    {
+                        time_bound: parseFloat(datapoint.time) + parseFloat(datapoint.time_error),
+                        rate: parseFloat(datapoint.rate)
+                    }
+                ]
+
+                error_bars.push(error_bar);
+            })
+
+            return error_bars;
+        }
+
+        function setupDataControls(data) {
+
+            let columns = data.columns;
+
+            let options_x_demo = getOptionsFromData(columns, 'time');
+            let options_y_demo = getOptionsFromData(columns, 'rate');
+
+            let select_data_x_demo = document.getElementById("data_x_demo");
+            let select_data_y_demo = document.getElementById("data_y_demo");
+
+            options_x_demo.forEach(function(option) {
+                select_data_x_demo.add(option);
+            });
+
+            options_y_demo.forEach(function(option) {
+                select_data_y_demo.add(option);
+            });
+
+        }
+
+        function getOptionsFromData(columns, selected) {
+            let options = [];
+            let option;
+
+            columns.forEach(function(column) {
+                option = document.createElement("option");
+
+                if(column === selected) option.setAttribute('selected', 'true');
+
+                option.value = column;
+                option.text = column;
+
+                options.push(option);
+            })
+
+            return options;
+        }
+
+        function dataListenerDemo(e) {
+            let column = e.target.value;
+            let axis = e.target.dataset.axis;
+
+            demo_graph_trans[axis].data = column;
+
+            updateData(axis);
+        }
+
+        function scaleListenerDemo(e) {
+            let scale = e.target.value;
+            let axis = e.target.dataset.axis;
+
+            demo_graph_trans[axis].scale = scale;
+
+            updateData(axis);
+        }
+
+        function updateData(axis) {
+
+            if(axis === 'x') {
+
+                if(demo_graph_trans['x'].scale === 'linear') {
+                    x = d3.scaleLinear()
+                        .domain(d3.extent(data, d => d[demo_graph_trans['x'].data]))
+                        .range([0, width]);
+                } else {
+                    x = d3.scaleLog()
+                        .domain([d3.min(data, d => d[demo_graph_trans['x'].data]) * 0.8, d3.max(data, d => d[demo_graph_trans['x'].data])])
+                        .range([0, width]);
+                }
+
+                xAxis.call(d3.axisBottom(x))
+
+            } else {
+
+                if(demo_graph_trans['y'].scale === 'linear') {
+                    y = d3.scaleLinear()
+                        .domain(d3.extent(data, d => d[demo_graph_trans['y'].data]))
+                        .range([height, 0]);
+                } else {
+                    y = d3.scaleLog()
+                        .domain([d3.min(data, d => d[demo_graph_trans['y'].data]) * 0.8, d3.max(data, d => d[demo_graph_trans['y'].data])])
+                        .range([height, 0]);
+                }
+
+                yAxis.call(d3.axisLeft(y))
+            }
+
+            updateChart({'transform': d3.zoomIdentity})
+        }
+
+    });
+
+</script>
+
+</body>
+</html>
