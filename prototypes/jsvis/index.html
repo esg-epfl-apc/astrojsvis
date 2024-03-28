@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="fits-reader.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-3.3.4.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="fitsreaderWrapper.js"></script>
+    <script src="bokehWrapper.js"></script>
+    <script src="d3Wrapper.js"></script>
+    <script>
+
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container-graph-settings {
+            display: grid;
+            grid-template-columns: minmax(75%, auto) minmax(auto, 25%);
+            grid-gap: 20px;
+            padding: 20px;
+        }
+
+        .container-data {
+            display: grid;
+            grid-template-columns: 60% 40%;
+            grid-gap: 20px;
+            padding: 20px;
+        }
+
+        .column-graph {
+            background-color: lightblue;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .column-settings {
+            background-color: lightgreen;
+            padding: 20px;
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .column-data {
+            background-color: lightgray;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .column-header {
+            background-color: lightyellow;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            margin: 10px 0 10px 0;
+        }
+
+        .select-errorbar {
+            margin: 2px 0 15px 0;
+        }
+
+        #select-axis-x-scale {
+            margin-bottom: 10px;
+        }
+
+        #table-header-data {
+            border-top: 1px solid lightgray;
+            border-left: 1px solid lightgray;
+            border-right: 1px solid lightgray;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container container-graph-settings">
+        <div class="column-graph">
+            <h2>Graph container</h2>
+            <div id="graph-container"></div>
+            <div id="graph-container1"></div>
+            <div id="graph-container-custom"></div>
+            <div id="graph-container-custom1"></div>
+        </div>
+        <div class="column-settings">
+            <h2>Settings container</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Settings</h5>
+                </div>
+                <div class="card-body">
+
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Library Selection</h6>
+                            <select id="select-lib" class="form-select">
+                                <option selected>Library</option>
+                                <option value="0">D3</option>
+                                <option value="1">Bokeh</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div id="card-body-hdus" class="card-body">
+                            <h6 class="card-title">HDU Selection</h6>
+                            <select id="select-hdus" class="form-select">
+                                <option selected>HDUs</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div id="card-body-axis" class="card-body">
+                            <h6 class="card-title">Axis Settings</h6>
+                            <select id="select-axis-x" class="form-select select-axis">
+                                <option selected>X axis</option>
+                            </select>
+                            <select id="select-axis-x-scale" class="form-select select-axis-scale static-select">
+                                <option value="linear" selected>Linear</option>
+                                <option value="log" selected>Log</option>
+                            </select>
+                            <select id="select-axis-y" class="form-select select-axis">
+                                <option selected>Y axis</option>
+                            </select>
+                            <select id="select-axis-y-scale" class="form-select select-axis-scale static-select">
+                                <option value="linear" selected>Linear</option>
+                                <option value="log" selected>Log</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div id="card-body-error-bars" class="card-body">
+                            <h6 class="card-title">Error Bars</h6>
+                            <select id="select-axis-x-error-bars" class="form-select select-axis-error-bars">
+                                <option value="none" selected>X axis error bars</option>
+                            </select>
+                            <select id="select-axis-y-error-bars" class="form-select select-axis-error-bars">
+                                <option value="none" selected>Y axis error bars</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div id="card-body-dataset" class="card-body">
+                            <h6 class="card-title">Dataset Selection</h6>
+                            <!--select class="form-select select-dataset">
+                                <option selected>Dataset</option>
+                            </select!-->
+                        </div>
+                    </div>
+
+                    <button id="button-generate" class="btn btn-primary">Generate</button>
+                    <button id="button-reset" class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container container-data">
+        <div class="column-data">
+            <h2>Data container</h2>
+            <div id="div-data">
+                <table id="table-data" class="table table-striped">
+                    <thead>
+                    <tr>
+
+                    </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="column-header">
+            <h2>Header container</h2>
+            <div id="div-header">
+                <table id="table-header-data" class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Value</th>
+                        <th scope="col">Comment</th>
+                    </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="main.js"></script>
+</body>
+</html>
