@@ -6,9 +6,24 @@ let margin = {top: 10, right: 30, bottom: 30, left: 60},
     width = 800 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
+function instantiateGraph(container, data, settings = null) {
+
+}
+
+function createGraphLightCurve(data, settings) {
+
+}
+
+function createGraphSpectrum(data, settings) {
+
+}
+
 function createGraph0(container, data, settings = null) {
 
+    console.log("Data")
     console.log(data);
+    
+    console.log("Settings")
     console.log(settings);
 
     dataset = data;
@@ -374,66 +389,4 @@ function updateChart(e) {
             .attr("d", line_error_bar_time(error_bar_time));
     })
     */
-}
-
-function createGraph1(container, data) {
-
-    const margin = {top: 50, right: 30, bottom: 30, left: 60},
-        width = 460,
-        height = 450;
-
-    let svg = d3.select(container)
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
-
-    let x = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.time))
-        .range([ 0, width ]);
-
-    let xAxis = svg.append("g")
-        .attr("id", "x_demo")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x)
-            .tickFormat(d3.format(".1f")))
-        .call(g => g.selectAll(".tick line").clone()
-            .attr("class", "tick-line")
-            .attr("y2", -height)
-            .attr("stroke-opacity", 0.2))
-
-    let y = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.rate))
-        .range([ height, 0]);
-
-    let ylog = d3.scaleLog()
-        .domain([1, d3.max(data, d => d.rate)])
-        .range([ height, 0]);
-
-    let yAxis = svg.append("g")
-        .attr("id", "y_demo")
-        .call(d3.axisLeft(y)
-            .tickFormat(d3.format(".1f")))
-        .call(g => g.selectAll(".tick line").clone()
-            .attr("x2", width)
-            .attr("stroke-opacity", 0.2));
-
-    yAxis.select(".tick:last-of-type text").clone()
-        .attr("id", "y-label")
-        .attr("x", 3)
-        .attr("y", -5)
-        .attr("text-anchor", "start")
-        .attr("font-weight", "bold")
-        .text("Rate");
-
-    xAxis.select(".tick:last-of-type text").clone()
-        .attr("id", "y-label")
-        .attr("y", -11)
-        .attr("x", 2)
-        .attr("text-anchor", "start")
-        .attr("font-weight", "bold")
-        .text("Time");
-
 }

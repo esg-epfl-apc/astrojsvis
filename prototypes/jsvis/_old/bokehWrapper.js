@@ -16,6 +16,12 @@ function createGraph(fits_file, settings) {
 
     let timedel = header.get('TIMEDEL');
 
+    console.log("HEADER");
+    console.log(header);
+
+    console.log("TIMEDEL");
+    console.log(timedel);
+
     let x, y, dy;
 
     let scales = null;
@@ -69,6 +75,8 @@ function createGraph(fits_file, settings) {
 
 function plot_light_curve(x, y, dy, timedel, labels, scales = null) {
     const plt = Bokeh.Plotting;
+
+    console.log("TIMEDEL plot :" + timedel);
 
     let ylow = [], yup = [], xlow = [], xup = [];
     for (let i in dy) {
