@@ -12,12 +12,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          lfs: true
       - run: npm i && npm run build-preview
         if: github.event.action != 'closed'
-      - uses: rossjrw/pr-preview-action@v1
+      - id: deploy_preview
+        uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: preview
           preview-branch: gh-pages
           umbrella-dir: pr-preview
           action: auto
           custom-url: 
+      - if: github.event.action != 'closed'
+        run: |
+          git checkout gh-pages
+          git pull
+          sed -i '|<div id="previews">|a <a href="${{ steps.deploy_preview.outputs.deployment-url }}">Preview PR#</a>' index.html
+          git add index.html
+          git commit -m 'Added preview link'
+          git push
+      - if: github.event.action == 'closed'
+        run: |
+          git checkout gh-pages
+          git pull
+          sed -i '|${{ steps.deploy_preview.outputs.deployment-url }}|d' index.html
+          git add index.html
+          git commit -m 'Added preview link'
+          git push
