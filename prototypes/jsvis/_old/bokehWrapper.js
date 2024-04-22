@@ -14,6 +14,10 @@ function createGraph(fits_file, settings) {
     let header = hdu.header;
     let data = hdu.data;
 
+    console.log(fits_file);
+    console.log(hdu);
+    console.log(data);
+
     let timedel = header.get('TIMEDEL');
 
     console.log("HEADER");

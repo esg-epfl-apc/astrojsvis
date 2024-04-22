@@ -1,26 +1,32 @@
 class D3Wrapper {
 
     static library = "d3";
+    static container_id = "visualization-container";
 
-    static specific_settings = ['d3-options'];
+    static specific_settings = {
+        'd3-settings': {
+            display: true,
+            'd3-options': {
+                'has_line': true
+            }
+        }
+    };
 
     container;
     container_id;
 
     settings_object;
+    configuration_object = null;
 
     graph_list = [];
 
-    constructor(container_id, dataset, settings_object) {
+    constructor(container_id = D3Wrapper.container_id) {
         this._setupListeners();
 
         this.container_id = container_id;
         this._setContainer();
 
-        this.settings_object = settings_object;
 
-        let graph_object = new d3Graph(this.container, dataset);
-        this.graph_list.push(graph_object);
     }
 
     _setupListeners() {
@@ -30,10 +36,63 @@ class D3Wrapper {
 
     handleSettingsChangedEvent(event) {
         let settings_object = event.detail.settings_object;
+
+        console.log(settings_object);
+
+        let library_settings = settings_object.getLibrarySettings();
+
+        console.log(library_settings);
+
+        if(library_settings.library === D3Wrapper.library) {
+            this.createConfigurationObject();
+
+            console.log(this.configuration_object);
+
+            if(this.configuration_object !== null) {
+                let configuration_event = new ConfigurationEvent(this.configuration_object);
+
+                console.log(configuration_event);
+
+                configuration_event.dispatchToSubscribers();
+            }
+        }
+
     }
 
     handleVisualizationGenerationEvent(event) {
-        let settings_object = event.detail.settings_object;
+        this.settings_object = event.detail.settings_object;
+
+        console.log(this.settings_object);
+
+        let library_settings = this.settings_object.getLibrarySettings();
+
+        if(library_settings.library === D3Wrapper.library) {
+
+            this.resetContainer();
+
+            let data_type = this.settings_object.getDataTypeSettings();
+            let hdu = this.settings_object.getHDUsSettings();
+            let axis = this.settings_object.getAxisSettings();
+            let scales = this.settings_object.getScalesSettings();
+
+            let has_error_bars = false;
+            let error_bars = this.settings_object.getErrorBarsSettings();
+
+            if(error_bars !== null) {
+                has_error_bars = true;
+            }
+
+            let data = this.getProcessedData(data_type.type, hdu['hdu_index'], error_bars);
+
+            console.log(data);
+
+            let visualization = VisualizationContainer.getD3Visualization();
+
+            visualization.initializeSettings(data.main, axis, scales, error_bars, false, null);
+
+            visualization.initializeGraph();
+        }
+
     }
 
     _setContainer() {
@@ -42,6 +101,10 @@ class D3Wrapper {
 
     resetContainer() {
         this.container.innerHTML = "";
+    }
+
+    createConfigurationObject() {
+        this.configuration_object = SettingsConfiguration.getConfigurationObject(D3Wrapper.specific_settings);
     }
 
     createGraph(index) {
@@ -77,21 +140,29 @@ class D3Wrapper {
         return processedSettings;
     }
 
-    processData() {
+    getProcessedData(data_type, hdu_index, error_bars) {
         let data = null;
 
         let dpc = DataProcessorContainer.getDataProcessorContainer();
         let data_processor;
 
-        if(this.settings_object.data_type === 'light-curve') {
+        console.log("Data: " + dpc);
 
-            data_processor = dpc.getLightCurveProcessor();
+        let frw = WrapperContainer.getFITSReaderWrapper();
 
-        } else if(this.settings_object.data_type === 'spectrum') {
+        if(data_type === 'light-curve') {
 
-            data_processor = dpc.getSpectrumProcessor();
+            console.log("light curve")
+
+            data_processor = dpc.getLightCurveProcessor(frw, hdu_index);
+
+        } else if(data_type === 'spectrum') {
+
+            data_processor = dpc.getSpectrumProcessor(frw, hdu_index);
 
         }
+
+        data = data_processor.processDataJSON(error_bars);
 
         return data;
     }

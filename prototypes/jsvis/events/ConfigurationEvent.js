@@ -10,9 +10,9 @@ class ConfigurationEvent {
 
     event = null;
 
-    constructor(settings_object, detail = {}, options = {}) {
+    constructor(configuration_object, detail = {}, options = {}) {
 
-        this.detail = { ...detail, ...{'settings_object': settings_object}};
+        this.detail = { ...detail, ...{'configuration_object': configuration_object}};
         this.options = { ...ConfigurationEvent.defaultOptions, ...options };
 
         this.event = new CustomEvent(ConfigurationEvent.name, {

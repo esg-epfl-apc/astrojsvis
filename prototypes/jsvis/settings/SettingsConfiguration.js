@@ -62,4 +62,20 @@ class SettingsConfiguration {
         }
     }
 
+    getConfigurationObject(wrapper_configuration) {
+        let configuration = null;
+
+        configuration = ObjectUtils.deep_merge(SettingsConfiguration.default_configuration, wrapper_configuration);
+
+        return configuration;
+    }
+
+    static getConfigurationObject(wrapper_configuration) {
+        let configuration = null;
+
+        configuration = ObjectUtils.deep_merge(SettingsConfiguration.default_configuration, wrapper_configuration);
+
+        return configuration;
+    }
+
 }

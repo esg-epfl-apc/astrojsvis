@@ -4,8 +4,8 @@ class DataProcessorContainer {
 
     }
 
-    getLightCurveProcessor() {
-        return new LightCurveProcessor();
+    getLightCurveProcessor(fits_reader_wrapper, hdu_index) {
+        return new LightCurveProcessor(fits_reader_wrapper, hdu_index);
     }
 
     getSpectrumProcessor() {

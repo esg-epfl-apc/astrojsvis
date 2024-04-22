@@ -1,5 +1,24 @@
 class LightCurveProcessor {
 
+    static header_cards = [
+        'TIMEREF',
+        'TIMEDEL',
+        'MJDREF',
+        'TSTART',
+        'TSTOP',
+        'TELAPSE',
+        'E_MIN',
+        'E_MAX',
+        'E_UNIT']
+
+    static columns_names = {
+        time: 'TIME',
+        timedel: 'TIMEDEL',
+        rate: 'RATE',
+        error: 'ERROR',
+        fracexp: 'FRACEXP'
+    }
+
     static binning_types = {
         'TIME_BASED': 'time_based',
         'EQUAL_COUNT': 'equal_count'
@@ -19,20 +38,144 @@ class LightCurveProcessor {
         'sum'
     ]
 
+    static min_columns_number = 2;
+    static mandatory_columns = ['RATE'];
+    static replacement_columns = ['TIMEDEL'];
+
     hdu;
+    hdu_index = null;
+
     binning_type;
     method;
 
-    constructor() {
+    fits_reader_wrapper;
+    header_values = {};
 
+    constructor(fits_reader_wrapper, hdu_index) {
+        this.fits_reader_wrapper = fits_reader_wrapper;
+        this.hdu_index = hdu_index;
+
+        this._setHDU();
     }
 
-    setHDU(hdu) {
+    _setHDU() {
+
+        console.log(this.hdu_index);
+        console.log(this.fits_reader_wrapper.file);
+
+        this.hdu = this.fits_reader_wrapper.getHDU(this.hdu_index);
+    }
+
+    setHDU(hdu, hdu_index) {
         this.hdu = hdu;
+        this.hdu_index = hdu_index;
     }
 
-    _checkColumns() {
+    processDataRawJSON(axis, error_bars = null) {
+        //let raw_fits_data = this.hdu.data;
+        let raw_fits_data = this.fits_reader_wrapper.getDataFromHDU(this.hdu_index);
+        let data = {};
 
+        console.log(this.hdu.data);
+        console.log(raw_fits_data);
+
+        let x;
+        let y;
+
+        let x_column = axis.x;
+        let y_column = axis.y;
+
+        raw_fits_data.getColumn(x_column, function(col){x = col});
+        raw_fits_data.getColumn(y_column, function(col){y = col});
+
+        data.x = x;
+        data.y = y;
+
+        if(error_bars) {
+
+            let dy;
+
+            let error_bar_x_column = error_bars.x;
+            let error_bar_y_column = error_bars.y;
+
+            raw_fits_data.getColumn(error_bar_y_column, function(col) {dy = col});
+
+            data.dy = dy;
+            //data.timedel = this.getTimedel(error_bar_x_column);
+            //data.timedel = this.fits_reader_wrapper.getHeaderFromHDU(this.hdu_index).get("TIMEDEL");
+
+            raw_fits_data.getColumn(error_bar_x_column, function(col) {data.timedel = col});
+
+        }
+
+        return data;
+    }
+
+    processDataJSON(error_bars = null) {
+        let raw_fits_data = this.hdu.data;
+        let light_curve_data = {};
+
+        if(!this._checkColumns()) {
+            throw new Error("");
+        }
+
+        light_curve_data.main = this.fits_reader_wrapper.getColumnsJSONDataFromHDU(this.hdu_index);
+
+        if(error_bars) {
+            //light_curve_data.error_bars = this._processErrorBarsDataJSON(error_bars, light_curve_data.main);
+        }
+
+        return light_curve_data;
+    }
+
+    processDataCSV() {
+
+    }
+
+    _processErrorBarsDataJSON(errorBars, data) {
+        let error_bar_time_values = [];
+        let error_bar_rate_values = [];
+
+        data.forEach(row => {
+
+        });
+
+    }
+
+    _checkColumns(required_nb_columns) {
+        let is_checked = true;
+
+        let columns_number = this.fits_reader_wrapper.getNumberOfColumnFromHDU(this.hdu_index)
+        let columns_name = this.fits_reader_wrapper.getColumnsNameFromHDU(this.hdu_index)
+
+        if(columns_number < required_nb_columns || !columns_name.includes(LightCurveProcessor.columns_names.rate)) {
+            is_checked = false;
+        }
+
+        return is_checked;
+    }
+
+    getTimedel(error_bar_x = null) {
+        let timedel;
+
+        if(this.fits_reader_wrapper.getColumnsNameFromHDU(this.hdu_index).includes("TIMEDEL")) {
+            data.getColumn(error_bar_x, function (col) {timedel = col});
+        } else {
+            let header = this.fits_reader_wrapper.getHeaderFromHDU(this.hdu_index);
+            timedel = header.get("TIMEDEL");
+        }
+
+        return timedel;
+    }
+
+    _getValueFromHDUHeader() {
+        let card_value;
+        LightCurveProcessor.header_cards.forEach((card_name) => {
+            card_value = null;
+
+            card_value = this.fits_reader_wrapper.getHeaderCardValueByNameFromHDU(this.hdu_index, card_name)
+            this.header_values[card_name] = card_value;
+        })
     }
 
     setBinningType(binning_type) {

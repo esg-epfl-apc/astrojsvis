@@ -40,6 +40,19 @@ class FITSReaderWrapper {
         }
     }
 
+    getHDU(hdu_index) {
+        console.log(this.file.hdus.length);
+        console.log(hdu_index);
+
+        console.log(this.file.hdus);
+
+        if(hdu_index >= 0 && hdu_index < this.file.hdus.length) {
+            return this.file.hdus[hdu_index];
+        } else {
+            return null;
+        }
+    }
+
     getHDUs() {
 
         let HDUs = [];
@@ -63,6 +76,44 @@ class FITSReaderWrapper {
         })
 
         return HDUs;
+    }
+
+    getNumberOfColumnFromHDU(hdu_index) {
+        let hdu = this.file.getHDU(hdu_index);
+
+        let header = hdu.header;
+        let data = hdu.data;
+
+        let type = header.get('XTENSION');
+
+        let column_number = null;
+
+        if(type === FITSReaderWrapper.BINTABLE || type === FITSReaderWrapper.TABLE) {
+            column_number = data.cols;
+        } else {
+            throw new HDUNotTabularError("Selected HDU is not tabular");
+        }
+
+        return column_number;
+    }
+
+    getColumnArrayFromHDU(hdu_index) {
+        let hdu = this.file.getHDU(hdu_index);
+
+        let header = hdu.header;
+        let data = hdu.data;
+
+        let type = header.get('XTENSION');
+
+        let column_array = [];
+
+        if(type === FITSReaderWrapper.BINTABLE || type === FITSReaderWrapper.TABLE) {
+            column_array = data.columns;
+        } else {
+            throw new HDUNotTabularError("Selected HDU is not tabular");
+        }
+
+        return column_array;
     }
 
     getColumnsNameFromHDU(hdu_index) {
@@ -106,6 +157,7 @@ class FITSReaderWrapper {
             data.columns.forEach(function(column) {
 
                 data.getColumn(column, function(col){
+                    console.log("FRW data col")
                     console.log(col);
                     column_data = col;
                 })
@@ -114,11 +166,19 @@ class FITSReaderWrapper {
             })
 
             let column_names = Object.keys(raw_columns_data_array);
-            let column_json_data_object = {};
 
             for (let i = 0; i < raw_columns_data_array[column_names[0]].length; i++) {
 
-                column_names.forEach(column_name => {
+                let column_json_data_object = {};
+
+                console.log("Data json");
+                console.log(i);
+
+                column_names.forEach((column_name) => {
+                    console.log(i);
+                    console.log("JSON Object");
+                    console.log(column_json_data_object);
+                    console.log("Raw data : " + raw_columns_data_array[column_name][i]);
                     column_json_data_object[column_name] = raw_columns_data_array[column_name][i];
                 });
 
@@ -140,7 +200,10 @@ class FITSReaderWrapper {
     }
 
     getDataFromHDU(hdu_index) {
+        console.log(this.file);
         let hdu = this.file.getHDU(hdu_index);
+        console.log(hdu);
+
         let data = hdu.data;
 
         return data;

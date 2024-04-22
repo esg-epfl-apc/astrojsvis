@@ -1,4 +1,4 @@
-class d3Graph {
+class D3Graph {
 
     x_scale;
     x_scale_type;
@@ -20,6 +20,7 @@ class d3Graph {
     line_container; path;
 
     container;
+    container_id;
 
     margin = {top: 10, right: 30, bottom: 30, left: 60};
     width = 800 - this.margin.left - this.margin.right;
@@ -48,11 +49,20 @@ class d3Graph {
 
     static default_axis_tick_format = ".1f";
 
-    constructor(container, dataset) {
-        this.container = container;
+    constructor(container_id = 'visualization-container', dataset = null) {
+        this.container_id = container_id;
         this.dataset = dataset;
 
+        this._setContainer();
+
+        this._updateChart = this._updateChart.bind(this);
+
+
         this.initialized = false;
+    }
+
+    _setContainer() {
+        this.container = document.getElementById(this.container_id);
     }
 
     setDimensions(margin, width, height) {
@@ -65,17 +75,26 @@ class d3Graph {
 
     }
 
-    initializeSettings(axis,
-                       scales = d3Graph.default_scales,
+    initializeSettings(data,
+                       axis,
+                       scales = D3Graph.default_scales,
                        error_bars = null,
                        has_line = false,
                        additional_plots = null) {
 
+        console.log(data);
+
+        console.log(axis);
+        console.log(scales);
+
         let is_set = false;
 
         try {
-            this.x_axis_data_col = axis['x'].value;
-            this.y_axis_data_col = axis['y'].value;
+
+            this.dataset = data;
+
+            this.x_axis_data_col = axis['x'];
+            this.y_axis_data_col = axis['y'];
 
             this.x_scale_type = scales['x'];
             this.y_scale_type = scales['y'];
@@ -145,6 +164,7 @@ class d3Graph {
             this.initialized = true;
         } catch(e) {
             console.log("Error during graph initialization");
+            console.log(e);
             this.initialized = false;
         }
 
@@ -165,19 +185,26 @@ class d3Graph {
                 "translate(" + this.margin.left + "," + this.margin.top + ")");
     }
 
-    _setXScale(scale_type) {
-        this.x_scale = d3Graph.scale_functions[scale_type]()
+    _setXScale() {
+        console.log(this.x_scale_type);
+        console.log(this.dataset);
+
+        console.log(this.x_axis_data_col);
+
+        this.x_scale = D3Graph.scale_functions[this.x_scale_type]()
             .domain(d3.extent(this.dataset, d => d[this.x_axis_data_col]))
             .range([ 0, this.width ]);
+
+        console.log(this.x_scale);
     }
 
-    _setYScale(scale_type) {
-        this.y_scale = d3Graph.scale_functions[scale_type]()
-            .domain(d3.extent(data, d => d[this.y_axis_data_col]))
+    _setYScale() {
+        this.y_scale = D3Graph.scale_functions[this.y_scale_type]()
+            .domain(d3.extent(this.dataset, d => d[this.y_axis_data_col]))
             .range([ this.height, 0]);
     }
 
-    _setXAxis(tick_format = d3Graph.default_axis_tick_format) {
+    _setXAxis(tick_format = D3Graph.default_axis_tick_format) {
          this.x_axis = this.svg.append("g")
             .attr("id", "x")
             .attr("transform", "translate(0," + this.height + ")")
@@ -189,7 +216,7 @@ class d3Graph {
                 .attr("stroke-opacity", 0.2))
     }
 
-    _setYAxis(tick_format = d3Graph.default_axis_tick_format) {
+    _setYAxis(tick_format = D3Graph.default_axis_tick_format) {
         this.y_axis = this.svg.append("g")
             .attr("id", "y")
             .call(d3.axisLeft(this.y_scale)
@@ -221,8 +248,8 @@ class d3Graph {
 
     _setDataPlot() {
 
-        let x = this.x_axis;
-        let y = this.y_axis;
+        let x = this.x_scale;
+        let y = this.y_scale;
 
         let x_col_data = this.x_axis_data_col;
         let y_col_data = this.y_axis_data_col;
@@ -296,16 +323,23 @@ class d3Graph {
 
     }
 
-    _updateChart() {
+    _updateChart(e) {
 
-        let rescaled_x = e.transform.rescaleX(this.x_axis);
-        let rescaled_y = e.transform.rescaleY(this.y_axis);
+        console.log("updateChart");
+
+        console.log(this.x_axis);
+
+        console.log(e);
+
+        let rescaled_x = e.transform.rescaleX(this.x_scale);
+        let rescaled_y = e.transform.rescaleY(this.y_scale);
 
         this.x_axis.call(d3.axisBottom(rescaled_x));
         this.y_axis.call(d3.axisLeft(rescaled_y));
 
         this.svg.selectAll(".tick-line").remove();
         this.svg.selectAll("#y-label").remove();
+        this.svg.selectAll("#x-label").remove();
 
         this.x_axis.selectAll(".tick line").clone()
             .attr("class", "tick-line")
@@ -320,7 +354,19 @@ class d3Graph {
         this._setXAxisLabel();
         this._setYAxisLabel();
 
-        this._setDataPlot();
+        //let { transform } = e;
+
+        //this.svg.attr("transform", transform);
+
+        let x_data_col = this.x_axis_data_col;
+        let y_data_col = this.y_axis_data_col;
+
+        this.svg.selectAll("circle")
+            .data(this.dataset)
+            .transition()
+            .duration(150)
+            .attr("cx", function (d) { return rescaled_x(d[x_data_col]); } )
+            .attr("cy", function (d) { return rescaled_y(d[y_data_col]); } )
 
         if(this.has_line) {
             this.svg.selectAll("path").remove();

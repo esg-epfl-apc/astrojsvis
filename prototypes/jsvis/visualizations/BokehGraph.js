@@ -1,6 +1,7 @@
 class BokehGraph {
 
     container_id = null;
+    container = null;
 
     static plt = Bokeh.Plotting;
 
@@ -48,41 +49,60 @@ class BokehGraph {
 
     has_data_table = false;
 
-    constructor(container_id) {
+    constructor(container_id = '#visualization-container') {
         this.container_id = container_id;
+        this._setContainer();
     }
 
-    initializeSettings() {
+    _setContainer() {
+        this.container = document.getElementById(this.container_id);
+    }
 
+    initializeSettings(data, labels, scales, title, error_bars = null) {
+        this.setupSource(data);
+        this.setupPlot(title, data['y_low'], data['y_up']);
+        this.setupData();
+        this.setupScales(scales);
+        this.setupLabels(labels);
+
+        if(error_bars) {
+            this.setupErrorBars();
+        }
     }
 
     initializeGraph() {
 
         if(this.has_data_table) {
-            plt.show(new Bokeh.Column({children: [p, data_table]}), "#graph-container");
+            BokehGraph.plt.show(new Bokeh.Column({children: [p, data_table]}), "#graph-container");
         } else {
             BokehGraph.plt.show(this.plot, this.container_id);
         }
     }
 
-    setupPlot(title, y_range) {
+    setupPlot(title, y_range_low, y_range_up) {
         this.plot = BokehGraph.plt.figure({
             title: title,
             tools: this.tool_string,
             width: 800,
             height: 600,
-            y_range: [Math.min(...y_range['low']), Math.max(...y_range['up'])],
+            y_range: [Math.min(...y_range_low), Math.max(...y_range_up)],
         });
     }
 
     setupSource(data_sources) {
+
+        console.log(data_sources);
+        let data = { x: data_sources.x, y: data_sources.y, y_low: data_sources.y_low, y_up: data_sources.y_up, x_low: data_sources.x_low, x_up: data_sources.x_up }
+        console.log(data);
+
         this.source = new Bokeh.ColumnDataSource({
             data: data_sources
+            //data: { x: data_sources.x, y: data_sources.y, y_low: data_sources.y_low, y_up: data_sources.y_up, x_low: data_sources.x_low, x_up: data_sources.x_up }
         });
     }
 
     setupData() {
-        const circles = p.circle({ field: "x" }, { field: "y" }, {
+        const circles = this.plot.circle({ field: "x" }, { field: "y" }, {
             source: this.source,
             size: 4,
             fill_color: "navy",
@@ -95,8 +115,8 @@ class BokehGraph {
             dimension: "height",
             source: this.source,
             base: {field: "x"},
-            lower: {field: "ylow"},
-            upper: {field: "yup"},
+            lower: {field: "y_low"},
+            upper: {field: "y_up"},
             line_color: "navy",
             lower_head: null,
             upper_head: null,
@@ -106,12 +126,15 @@ class BokehGraph {
             dimension: "width",
             source: this.source,
             base: {field: "y"},
-            lower: {field: "xlow"},
-            upper: {field: "xup"},
+            lower: {field: "x_low"},
+            upper: {field: "x_up"},
             line_color: "navy",
             lower_head: null,
             upper_head: null,
         });
+
+        this.plot.add_layout(this.y_error_bar);
+        this.plot.add_layout(this.x_error_bar);
     }
 
     setupScales (scales) {
