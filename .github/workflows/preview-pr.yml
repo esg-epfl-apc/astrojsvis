@@ -24,23 +24,23 @@ jobs:
           umbrella-dir: pr-preview
           action: auto
           custom-url: 
-      - if: github.event.action != 'closed'
+      - name: Add link to index
+        if: github.event.action != 'closed'
         run: |
           git checkout gh-pages
           git pull
-          grep ${{ steps.deploy_preview.outputs.deployment-url }}
-          if [ $? -ne 0 ]; then
+          if ! grep ${{ steps.deploy_preview.outputs.deployment-url }} index.html; then
             sed -i '\|<div id="previews">|a <a href="${{ steps.deploy_preview.outputs.deployment-url }}">Preview PR#${{ github.event.pull_request.number }}</a><br>' index.html
             git add index.html
             git commit -m 'Added preview link'
             git push
           fi
-      - if: github.event.action == 'closed'
+      - name: Remove link from index
+        if: github.event.action == 'closed'
         run: |
           git checkout gh-pages
           git pull
-          grep ${{ steps.deploy_preview.outputs.deployment-url }}
-          if [ $? -eq 0 ]; then
+          if grep ${{ steps.deploy_preview.outputs.deployment-url }} index.html; then
             sed -i '\|${{ steps.deploy_preview.outputs.deployment-url }}|d' index.html
             git add index.html
             git commit -m 'Added preview link'
