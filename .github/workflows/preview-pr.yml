@@ -28,7 +28,7 @@ jobs:
         run: |
           git checkout gh-pages
           git pull
-          sed -i '|<div id="previews">|a <a href="${{ steps.deploy_preview.outputs.deployment-url }}">Preview PR#</a>' index.html
+          sed -i '\|<div id="previews">|a <a href="${{ steps.deploy_preview.outputs.deployment-url }}">Preview PR#</a>' index.html
           git add index.html
           git commit -m 'Added preview link'
           git push
@@ -36,7 +36,7 @@ jobs:
         run: |
           git checkout gh-pages
           git pull
-          sed -i '|${{ steps.deploy_preview.outputs.deployment-url }}|d' index.html
+          sed -i '\|${{ steps.deploy_preview.outputs.deployment-url }}|d' index.html
           git add index.html
           git commit -m 'Added preview link'
           git push
