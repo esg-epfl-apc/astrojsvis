@@ -1,1 +1,327 @@
-Hello World!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="_vendors/fits-reader.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-3.3.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-3.3.4.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script src="errors/InvalidURLError.js"></script>
+    <script src="errors/HDUNotTabularError.js"></script>
+    <script src="errors/EventNotFoundInRegistryError.js"></script>
+    <script src="errors/NoEventToDispatchError.js"></script>
+    <script src="errors/UnsupportedTimeFormatError.js"></script>
+
+    <script src="registries/EventSubscribersRegistry.js"></script>
+
+    <script src="containers/RegistryContainer.js"></script>
+    <script src="containers/SettingsContainer.js"></script>
+    <script src="containers/DataProcessorContainer.js"></script>
+    <script src="containers/WrapperContainer.js"></script>
+    <script src="containers/VisualizationContainer.js"></script>
+
+    <script src="visualizations/BokehGraph.js"></script>
+    <script src="visualizations/D3Graph.js"></script>
+
+    <script src="wrappers/FITSReaderWrapper.js"></script>
+    <script src="wrappers/BokehWrapper.js"></script>
+    <script src="wrappers/D3Wrapper.js"></script>
+
+    <script src="data_processors/LightCurveProcessor.js"></script>
+    <script src="data_processors/SpectrumProcessor.js"></script>
+
+    <script src="events/FITSLoadedEvent.js"></script>
+    <script src="events/SettingsChangedEvent.js"></script>
+    <script src="events/ConfigurationEvent.js"></script>
+    <script src="events/VisualizationGenerationEvent.js"></script>
+
+    <script src="settings/VisualizationSettings.js"></script>
+    <script src="settings/SettingsConfiguration.js"></script>
+
+    <script src="components/VisualizationComponent.js"></script>
+    <script src="components/SettingsComponent.js"></script>
+    <script src="components/HeaderComponent.js"></script>
+    <script src="components/DataComponent.js"></script>
+
+    <script src="utils/ObjectUtils.js"></script>
+
+    <script>
+
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container-graph-settings {
+            display: grid;
+            grid-template-columns: minmax(75%, auto) minmax(auto, 25%);
+            grid-gap: 20px;
+            padding: 20px;
+        }
+
+        .container-data {
+            display: grid;
+            grid-template-columns: 60% 40%;
+            grid-gap: 20px;
+            padding: 20px;
+        }
+
+        .column-graph {
+            background-color: lightblue;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .column-settings {
+            background-color: lightgreen;
+            padding: 20px;
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .column-data {
+            background-color: lightgray;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .column-header {
+            background-color: lightyellow;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            margin: 10px 0 10px 0;
+        }
+
+        .select-errorbar {
+            margin: 2px 0 15px 0;
+        }
+
+        #select-axis-x-scale {
+            margin-bottom: 10px;
+        }
+
+        .select-hdus {
+            margin-bottom: 5px;
+        }
+
+        #table-header-data {
+            border-top: 1px solid lightgray;
+            border-left: 1px solid lightgray;
+            border-right: 1px solid lightgray;
+        }
+
+        #bokeh-settings {
+            display: none;
+        }
+
+        #d3-settings {
+            display: none;
+        }
+
+        #light-curve-settings {
+            display: none;
+        }
+
+        #spectrum-settings {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="jsvis-main">
+        <div class="container container-graph-settings">
+            <div class="column-graph">
+                <visualization-component id="visualization-component">
+                    <h2>Graph container</h2>
+                    <div id="visualization-container"></div>
+                </visualization-component>
+            </div>
+            <div class="column-settings">
+                <settings-component id="settings-component">
+                    <h2>Settings container</h2>
+                    <div id="settings-container" class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- LIBRARY SETTINGS -->
+                            <div id="library-settings" class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Library Selection</h6>
+                                    <select id="select-library" class="form-select">
+                                        <option selected>Library</option>
+                                        <option value="d3">D3</option>
+                                        <option value="bokeh">Bokeh</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- LIBRARY SPECIFIC SETTINGS -->
+                            <div id="bokeh-settings" class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Bokeh Settings</h6>
+                                    <label for="has-datatable-checkbox">Data table : </label>
+                                    <input type="checkbox" id="has-datatable-checkbox" class="form-checkbox" name="has-datatable-checkbox">
+                                </div>
+                            </div>
+                            <div id="d3-settings" class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">D3 Settings</h6>
+                                    <label for="has-line-checkbox">Line : </label>
+                                    <input type="checkbox" id="has-line-checkbox" class="form-checkbox" name="has-line-checkbox">
+                                </div>
+                            </div>
+                            <!-- DATA TYPE SETTINGS -->
+                            <div id="data-type-settings" class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Data type selection</h6>
+                                    <select id="select-data-type" class="form-select">
+                                        <option selected>Generic</option>
+                                        <option value="light-curve">Light Curve</option>
+                                        <option value="spectrum">Spectrum</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- DATA TYPE SPECIFIC SETTINGS -->
+                            <div id="light-curve-settings" class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Light Curve Settings</h6>
+                                    <select id="select-time-format" class="form-select">
+                                        <option selected>Base Time Format</option>
+                                        <option value="mjd" >MJD</option>
+                                        <option value="jd" >JD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="spectrum-settings" class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Spectrum Settings</h6>
+                                </div>
+                            </div>
+                            <!-- HDUS SETTINGS -->
+                            <div id="hdus-settings" class="card">
+                                <div id="card-body-hdus" class="card-body">
+                                    <h6 class="card-title">HDU Selection</h6>
+                                    <select id="select-hdus" class="form-select">
+                                        <option selected>HDUs</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- AXIS SETTINGS -->
+                            <div id="axis-settings" class="card">
+                                <div id="card-body-axis" class="card-body">
+                                    <h6 class="card-title">Axis Settings</h6>
+                                    <select id="select-axis-x" class="form-select select-axis">
+                                        <option selected>X axis</option>
+                                    </select>
+                                    <select id="select-axis-x-scale" class="form-select select-axis-scale static-select">
+                                        <option value="linear" selected>Linear</option>
+                                        <option value="log" selected>Log</option>
+                                    </select>
+                                    <select id="select-axis-y" class="form-select select-axis">
+                                        <option selected>Y axis</option>
+                                    </select>
+                                    <select id="select-axis-y-scale" class="form-select select-axis-scale static-select">
+                                        <option value="linear" selected>Linear</option>
+                                        <option value="log" selected>Log</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- ERROR BARS SETTINGS -->
+                            <div id="error-bars-settings" class="card">
+                                <div id="card-body-error-bars" class="card-body">
+                                    <h6 class="card-title">Error Bars</h6>
+                                    <label for="has-error-bars-checkbox">Add error bars : </label>
+                                    <input type="checkbox" id="has-error-bars-checkbox" class="form-checkbox" name="has-error-bars-checkbox">
+                                    <select id="select-axis-x-error-bar" class="form-select select-axis-error-bars">
+                                        <option value="none" selected>X axis error bars</option>
+                                    </select>
+                                    <select id="select-axis-y-error-bar" class="form-select select-axis-error-bars">
+                                        <option value="none" selected>Y axis error bars</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- BINNING SETTINGS -->
+                            <div id="binning-settings" class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Binning Settings</h6>
+                                </div>
+                            </div>
+                            <!-- ADDITIONAL DATASET SETTINGS -->
+                            <div id="additional-dataset-settings" class="card">
+                                <div id="card-body-dataset" class="card-body">
+                                    <h6 class="card-title">Dataset Selection</h6>
+                                </div>
+                            </div>
+
+                            <button id="button-generate" class="btn btn-primary">Generate</button>
+                            <button id="button-reset" class="btn btn-secondary">Reset</button>
+                        </div>
+                    </div>
+                </settings-component>
+            </div>
+        </div>
+
+        <div class="container container-data">
+            <div class="column-data">
+                <data-component id="data-component">
+                    <h2>Data container</h2>
+                    <select id="select-data-hdus" class="form-select select-hdus">
+                        <option selected>HDUs</option>
+                    </select>
+                    <div id="div-data">
+                        <table id="table-data" class="table table-striped">
+                            <thead>
+                            <tr>
+
+                            </tr>
+                            </thead>
+                            <tbody class="table-group-divider">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </data-component>
+            </div>
+            <div class="column-header">
+                <header-component id="header-component">
+                    <h2>Header container</h2>
+                    <select id="select-header-hdus" class="form-select select-hdus">
+                        <option selected>HDUs</option>
+                    </select>
+                    <div id="div-header">
+                        <table id="table-header-data" class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Value</th>
+                                <th scope="col">Comment</th>
+                            </tr>
+                            </thead>
+                            <tbody class="table-group-divider">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </header-component>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="main.js"></script>
+</body>
+</html>
