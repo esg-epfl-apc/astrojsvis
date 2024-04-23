@@ -3,7 +3,7 @@
     "description": "",
     "version": "0.0.1",
     "config": {
-        "prototype": "test"
+        "prototype": "jsvis"
     },
     "scripts": {
       "build-preview": "mkdir -p preview; cp -r prototypes/${npm_package_config_prototype}/* preview/."
