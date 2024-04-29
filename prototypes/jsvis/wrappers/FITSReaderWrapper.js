@@ -17,6 +17,22 @@ class FITSReaderWrapper {
         }
     }
 
+    initializeFromPath(file_path) {
+
+        if(FITSReaderWrapper.is_path_valid(file_path)) {
+            this.file_path = file_path;
+            this._getFile()
+        } else {
+            console.log("Invalid file path");
+            throw new InvalidURLError("Invalid file path : " + file_path);
+        }
+
+    }
+
+    initializeFromBuffer(array_buffer) {
+        this._readFile(array_buffer);
+    }
+
     _getFile() {
 
         return fetch(this.file_path)
@@ -33,11 +49,19 @@ class FITSReaderWrapper {
         try {
             this.file = window.FITSReader.parseFITS(arrayBuffer);
 
-            this.sendFITSLoadedEvent()
+            this.sendFITSLoadedEvents();
 
         } catch(e) {
             console.log("Error initializing interface")
         }
+    }
+
+    getFilePath() {
+        return this.file_path;
+    }
+
+    setFile(file) {
+        this.file = file;
     }
 
     getHDU(hdu_index) {
@@ -252,11 +276,61 @@ class FITSReaderWrapper {
         return is_tabular;
     }
 
-    sendFITSLoadedEvent() {
-        let fle = new FITSLoadedEvent(this);
+    _isHDUTabular(hdu) {
+        let extension = hdu.header.get('XTENSION');
 
-        fle.dispatchToSubscribers();
+        return extension === FITSReaderWrapper.BINTABLE || extension === FITSReaderWrapper.TABLE;
+    }
 
+    getAllColumns() {
+        console.log(this.file);
+        let columns = [];
+
+        this.file.hdus.forEach((hdu, index) => {
+            console.log(hdu);
+
+            if(this._isHDUTabular(hdu)) {
+                console.log(this.getColumnsNameFromHDU(index));
+                let columns_name = this.getColumnsNameFromHDU(index);
+
+                columns_name.forEach((column_name) => {
+                    let column = {
+                        name: column_name,
+                        hdu_index: index,
+                        is_from_header: false
+                    }
+
+                    columns.push(column);
+                })
+
+                if(hdu.header.get('TIMEDEL') !== null) {
+                    let column = {
+                        name: 'TIMEDEL',
+                        hdu_index: index,
+                        is_from_header: true
+                    }
+
+                    columns.push(column);
+                }
+
+            }
+        })
+
+        return columns;
+    }
+
+    sendFITSLoadedEvents() {
+        let fitsle = new FITSLoadedEvent(this);
+        let filele = new FileLoadedEvent({
+            file_name: this.file_path,
+            type: 'fits',
+            file: this.file
+        });
+
+        fitsle.dispatchToSubscribers();
+        filele.dispatchToSubscribers();
+        
+        
         //fle.dispatchToMainRoot();
         //fle.dispatchToTarget(document.getElementById('select-header-hdus'));
     }

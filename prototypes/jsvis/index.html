@@ -18,6 +18,7 @@
     <script src="errors/UnsupportedTimeFormatError.js"></script>
 
     <script src="registries/EventSubscribersRegistry.js"></script>
+    <script src="registries/FileRegistry.js"></script>
 
     <script src="containers/RegistryContainer.js"></script>
     <script src="containers/SettingsContainer.js"></script>
@@ -39,10 +40,13 @@
     <script src="events/SettingsChangedEvent.js"></script>
     <script src="events/ConfigurationEvent.js"></script>
     <script src="events/VisualizationGenerationEvent.js"></script>
+    <script src="events/FileLoadedEvent.js"></script>
+    <script src="events/FileRegistryChangeEvent.js"></script>
 
     <script src="settings/VisualizationSettings.js"></script>
     <script src="settings/SettingsConfiguration.js"></script>
 
+    <script src="components/FileComponent.js"></script>
     <script src="components/VisualizationComponent.js"></script>
     <script src="components/SettingsComponent.js"></script>
     <script src="components/HeaderComponent.js"></script>
@@ -73,6 +77,53 @@
             grid-template-columns: 60% 40%;
             grid-gap: 20px;
             padding: 20px;
+        }
+
+        #column-file {
+            background-color: lightgray;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Two equal-width columns */
+            grid-template-rows: auto auto auto; /* Automatically size rows */
+            gap: 20px; /* Gap between grid items */
+        }
+
+        .full-width-column {
+            grid-column: 1 / span 2; /* Span across both columns */
+        }
+
+        .left-column, .right-column {
+            padding: 10px;
+        }
+
+        /* Styling for list-group items */
+        .list-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .list-group-item {
+            /* Your button styles */
+        }
+
+
+
+        #column-file select {
+            margin: 10px;
+        }
+
+        #column-file button {
+            margin: 1px;
+        }
+
+        #column-file input {
+            margin: 10px;
+            width: 50%;
         }
 
         .column-graph {
@@ -142,6 +193,64 @@
 </head>
 <body>
     <div id="jsvis-main">
+        <div class="container">
+            <div id="column-file">
+                <file-component id="file-component">
+                    <h2>File container</h2>
+
+                    <div class="grid-container">
+                        <div class="full-width-column" style="grid-column: 1 / span 2;">
+                            <div class="card">
+                                <div class="card-header">Download</div>
+                                <div class="card-body">
+                                    <input type="text" id="file-input-url" name="file-input" placeholder="File url">
+                                    <button id="load-file">Load file</button>
+                                    <input type="file" id="file-input-local">
+                                    <select id="select-file-type">
+                                        <option value="fits">FITS</option>
+                                        <option value="csv">CSV</option>
+                                    </select>
+                                    <select id="select-file" class="form-select select-file">
+                                        <option selected>Available files</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="left-column">
+                            <div class="card">
+                                <div class="card-header">Available files</div>
+                                <div class="card-body">
+                                    <div id="available-files-list" class="list-group">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right-column">
+                            <div class="card">
+                                <div class="card-header">Current files</div>
+                                <div class="card-body">
+                                    <div id="current-files-list" class="list-group">
+                                        <!--button type="button" class="list-group-item list-group-item-action active" aria-current="true"></button!-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="full-width-column" style="grid-column: 1 / span 2;">
+                            <div class="card">
+                                <div class="card-header">File settings</div>
+                                <div class="card-body">
+                                    <button class="btn btn-success" id="save-file-settings">Save changes</button>
+                                    <button class="btn btn-primary" id="add-to-plot">Add to plot</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </file-component>
+            </div>
+        </div>
         <div class="container container-graph-settings">
             <div class="column-graph">
                 <visualization-component id="visualization-component">

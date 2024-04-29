@@ -101,6 +101,7 @@ class D3Graph {
 
             if (error_bars) {
                 this.has_error_bars = true;
+                this.error_bars = error_bars;
 
                 this.x_axis_data_col_error_bar = axis['x'].value;
                 this.y_axis_data_col_error_bar = axis['y'].value;
@@ -150,7 +151,7 @@ class D3Graph {
             this._setZoomBehavior();
 
             if(this.has_error_bars) {
-                this._setErrorBars();
+                this._setErrorBars(this.error_bars);
             }
 
             if(this.has_line) {
@@ -286,7 +287,27 @@ class D3Graph {
         }
     }
 
-    _setErrorBars() {
+    _setErrorBars(error_bars) {
+
+        this.error_bars = error_bars;
+
+        console.log("error bars");
+
+        console.log(error_bars);
+        console.log(this.x_axis_data_col);
+
+        let line_error_bar_x = d3.line()
+            .x(d => this.x_scale(d[this.x_axis_data_col]))
+            .y(d => this.y_scale(d.bound));
+
+        error_bars.x.forEach((error_bar) => {
+            this.svg.append("path")
+                .attr("class", "error-bar-x")
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", line_error_bar_x(error_bar));
+        })
 
     }
 
@@ -340,6 +361,7 @@ class D3Graph {
         this.svg.selectAll(".tick-line").remove();
         this.svg.selectAll("#y-label").remove();
         this.svg.selectAll("#x-label").remove();
+        this.svg.selectAll(".error-bar-x").remove();
 
         this.x_axis.selectAll(".tick line").clone()
             .attr("class", "tick-line")
@@ -371,6 +393,23 @@ class D3Graph {
         if(this.has_line) {
             this.svg.selectAll("path").remove();
             this._setAxisLine();
+        }
+
+        if(this.has_error_bars) {
+            //this._setErrorBars(this.error_bars);
+
+            let line_error_bar_x = d3.line()
+                .x(d => rescaled_x(d[this.x_axis_data_col]))
+                .y(d => rescaled_y(d.bound));
+
+            this.error_bars.x.forEach((error_bar) => {
+                this.svg.append("path")
+                    .attr("class", "error-bar-x")
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line_error_bar_x(error_bar));
+            })
         }
 
     }
