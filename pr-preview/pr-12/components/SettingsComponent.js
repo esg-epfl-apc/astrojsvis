@@ -41,6 +41,7 @@ class SettingsComponent extends HTMLElement {
         this.handleDataTypeChangeEvent = this.handleDataTypeChangeEvent.bind(this);
         this.handleHDUsChangeEvent = this.handleHDUsChangeEvent.bind(this);
         this.handleGenerateEvent = this.handleGenerateEvent.bind(this);
+        this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
 
         this._setupExternalListeners();
         this._setupInnerListeners();
@@ -51,6 +52,7 @@ class SettingsComponent extends HTMLElement {
     _setupExternalListeners() {
         this.addEventListener('fits-loaded', this.handleFITSLoadedEvent);
         this.addEventListener('configuration', this.handleConfigurationEvent);
+        this.addEventListener('file-registry-change', this.handleFileChangeEvent);
     }
 
     _setupInnerListeners() {
@@ -157,6 +159,33 @@ class SettingsComponent extends HTMLElement {
         let visualization_generation_event = new VisualizationGenerationEvent(this.settings_object);
         visualization_generation_event.dispatch();
 
+    }
+
+    handleFileChangeEvent(event) {
+        let current_file_list = FileRegistry.getCurrentFilesList();
+        let columns = [];
+
+        console.log(current_file_list);
+
+        current_file_list.forEach((file) => {
+
+            if(file.type === 'fits') {
+                let fits_reader_wrapper = WrapperContainer.getFITSReaderWrapper();
+
+                fits_reader_wrapper.setFile(file.file);
+                let fits_columns = fits_reader_wrapper.getAllColumns();
+
+                fits_columns.forEach((fits_column) => {
+                    let column = {...fits_column, file_id: file.id};
+                    columns.push(column);
+                })
+
+            } else if(file.type === 'csv') {
+
+            }
+        })
+
+        console.log(columns);
     }
 
     _setContainer() {

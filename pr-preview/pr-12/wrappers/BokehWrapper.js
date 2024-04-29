@@ -119,12 +119,18 @@ class BokehWrapper {
 
         data = data_processor.processDataRawJSON(axis, error_bars);
 
-        data = this._processData(data);
+        console.log("Data bokeh");
+        console.log(error_bars);
+        console.log(data);
+
+        if(error_bars) {
+            data = this._processErrorBarData(data);
+        }
 
         return data;
     }
 
-    _processData(data) {
+    _processErrorBarData(data) {
 
         let y_low = [], y_up = [], x_low = [], x_up = [];
 
@@ -132,7 +138,7 @@ class BokehWrapper {
         console.log(data.dy);
         console.log(data.timedel);
 
-        let timedel = data.timedel[0];
+        //let timedel = data.timedel[0];
 
         for (let i in data.dy) {
             y_low[i] = data.y[i] - data.dy[i];

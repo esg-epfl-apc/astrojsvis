@@ -60,7 +60,13 @@ class BokehGraph {
 
     initializeSettings(data, labels, scales, title, error_bars = null) {
         this.setupSource(data);
-        this.setupPlot(title, data['y_low'], data['y_up']);
+
+        if(error_bars) {
+            this.setupPlot(title, data['y_low'], data['y_up']);
+        } else {
+            this.setupPlot(title, data['y'], data['y']);
+        }
+
         this.setupData();
         this.setupScales(scales);
         this.setupLabels(labels);

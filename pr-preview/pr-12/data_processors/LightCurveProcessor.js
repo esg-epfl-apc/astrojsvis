@@ -111,7 +111,7 @@ class LightCurveProcessor {
         return data;
     }
 
-    processDataJSON(error_bars = null) {
+    processDataJSON(axis, error_bars = null) {
         let raw_fits_data = this.hdu.data;
         let light_curve_data = {};
 
@@ -122,7 +122,7 @@ class LightCurveProcessor {
         light_curve_data.main = this.fits_reader_wrapper.getColumnsJSONDataFromHDU(this.hdu_index);
 
         if(error_bars) {
-            //light_curve_data.error_bars = this._processErrorBarsDataJSON(error_bars, light_curve_data.main);
+            light_curve_data.error_bars = this._processErrorBarsDataJSON(error_bars, axis, light_curve_data.main);
         }
 
         return light_curve_data;
@@ -132,14 +132,46 @@ class LightCurveProcessor {
 
     }
 
-    _processErrorBarsDataJSON(errorBars, data) {
-        let error_bar_time_values = [];
-        let error_bar_rate_values = [];
+    _processErrorBarsDataJSON(error_bars, axis, data) {
+        let error_bar_x_values = [];
+        let error_bar_y_values = [];
 
-        data.forEach(row => {
+        let axis_x = axis.x;
+        let axis_y = axis.y;
 
-        });
+        let error_bar_x_column = error_bars.x;
+        let error_bar_y_column = error_bars.y;
 
+        console.log(axis_x);
+
+        data.forEach(function(datapoint){
+            let error_bar_x = [
+                {
+                    bound: parseFloat(datapoint[axis_y]) - parseFloat(datapoint[error_bar_y_column]),
+                    [axis_x]: parseFloat(datapoint[axis_x])
+                },
+                {
+                    bound: parseFloat(datapoint[axis_y]) + parseFloat(datapoint[error_bar_y_column]),
+                    [axis_x]: parseFloat(datapoint[axis_x])
+                }
+            ]
+
+            let error_bar_y = [
+                {
+                    bound: parseFloat(datapoint[axis_x]) - parseFloat(datapoint[error_bar_x_column]),
+                    [axis_y]: parseFloat(datapoint[axis_y])
+                },
+                {
+                    bound: parseFloat(datapoint[axis_x]) + parseFloat(datapoint[error_bar_x_column]),
+                    [axis_y]: parseFloat(datapoint[axis_y])
+                }
+            ]
+
+            error_bar_x_values.push(error_bar_x);
+            error_bar_y_values.push(error_bar_y);
+        })
+
+        return {x: error_bar_x_values, y: error_bar_y_values}
     }
 
     _checkColumns(required_nb_columns) {

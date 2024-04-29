@@ -82,11 +82,15 @@ class D3Wrapper {
                 has_error_bars = true;
             }
 
-            let data = this.getProcessedData(data_type.type, hdu['hdu_index'], error_bars);
+            let data = this.getProcessedData(data_type.type, hdu['hdu_index'], axis, error_bars);
 
             console.log(data);
 
             let visualization = VisualizationContainer.getD3Visualization();
+
+            if(has_error_bars) {
+                error_bars = data.error_bars;
+            }
 
             visualization.initializeSettings(data.main, axis, scales, error_bars, false, null);
 
@@ -140,7 +144,7 @@ class D3Wrapper {
         return processedSettings;
     }
 
-    getProcessedData(data_type, hdu_index, error_bars) {
+    getProcessedData(data_type, hdu_index, axis, error_bars) {
         let data = null;
 
         let dpc = DataProcessorContainer.getDataProcessorContainer();
@@ -162,7 +166,7 @@ class D3Wrapper {
 
         }
 
-        data = data_processor.processDataJSON(error_bars);
+        data = data_processor.processDataJSON(axis, error_bars);
 
         return data;
     }
