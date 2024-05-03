@@ -1,4 +1,4 @@
-let file_path = "_test_files/spiacs_lc_query.fits";
+let file_path = "./_test_files/spiacs_lc_query.fits";
 
 let fits_reader_wrapper = new FITSReaderWrapper(file_path);
 
