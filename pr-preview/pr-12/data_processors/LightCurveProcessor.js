@@ -128,6 +128,10 @@ class LightCurveProcessor {
         return light_curve_data;
     }
 
+    processDataJSON(dataset) {
+
+    }
+
     processDataCSV() {
 
     }

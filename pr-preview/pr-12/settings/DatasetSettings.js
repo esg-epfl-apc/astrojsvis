@@ -1,4 +1,4 @@
-class SettingsConfiguration {
+class DatasetSettings {
 
     static default_configuration = {
         'library-settings': {
@@ -36,10 +36,10 @@ class SettingsConfiguration {
             }
         },
         'hdus-settings': {
-            display: false
+            display: true
         },
         'axis-settings': {
-            display: true
+            display: true,
         },
         'error-bars-settings': {
             display: true
@@ -54,28 +54,16 @@ class SettingsConfiguration {
 
     configuration = null;
 
-    constructor(configuration_object = null) {
-        if(configuration_object) {
-            this.configuration = JSON.parse(JSON.stringify(SettingsConfiguration.default_configuration));
-        } else {
-            this.configuration = JSON.parse(JSON.stringify(configuration_object));
-        }
+    constructor() {
+
     }
 
-    getConfigurationObject(wrapper_configuration) {
-        let configuration = null;
+    getSettingsObject() {
 
-        configuration = ObjectUtils.deep_merge(SettingsConfiguration.default_configuration, wrapper_configuration);
-
-        return configuration;
     }
 
-    static getConfigurationObject(wrapper_configuration) {
-        let configuration = null;
+    createColumn() {
 
-        configuration = ObjectUtils.deep_merge(SettingsConfiguration.default_configuration, wrapper_configuration);
-
-        return configuration;
     }
 
 }

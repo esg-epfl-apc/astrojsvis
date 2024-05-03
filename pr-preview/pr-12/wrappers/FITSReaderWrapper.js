@@ -29,7 +29,8 @@ class FITSReaderWrapper {
 
     }
 
-    initializeFromBuffer(array_buffer) {
+    initializeFromBuffer(array_buffer, file_name) {
+        this.file_path = file_name;
         this._readFile(array_buffer);
     }
 
@@ -82,18 +83,22 @@ class FITSReaderWrapper {
         let HDUs = [];
         let hdu_object;
         let type;
+        let extname = '';
 
+        console.log(this.file);
         this.file.hdus.forEach(function(hdu, index) {
 
             if (hdu.header.primary === true) {
                 type = "PRIMARY";
             } else {
                 type = hdu.header.get('XTENSION');
+                extname = hdu.header.get('EXTNAME');
             }
 
             hdu_object = {
                 "name": type,
-                "index": index
+                "index": index,
+                "extname": extname
             };
 
             HDUs.push(hdu_object);
@@ -216,6 +221,36 @@ class FITSReaderWrapper {
         return columns_data_json;
     }
 
+    getColumnDataFromHDU(hdu_index, column_name) {
+        let hdu = this.file.getHDU(hdu_index);
+
+        let header = hdu.header;
+        let data = hdu.data;
+
+        let type = hdu.header.get('XTENSION');
+
+        let col_data = [];
+        if(type === FITSReaderWrapper.BINTABLE || type === FITSReaderWrapper.TABLE) {
+
+            data.getColumn(column_name, function(col){
+                console.log("COLUMN DATA");
+                console.log(col);
+
+                if(col[0] === undefined) {
+                    let header_col_data = hdu.header.get(column_name);
+                    col = col.map(() => header_col_data);
+                }
+
+                col_data = col;
+            })
+
+        } else {
+            throw new HDUNotTabularError("Selected HDU is not tabular");
+        }
+
+        return col_data;
+    }
+
     getHeaderFromHDU(hdu_index) {
         let hdu = this.file.getHDU(hdu_index);
         let header = hdu.header;
@@ -238,6 +273,10 @@ class FITSReaderWrapper {
         let header = hdu.header;
 
         let value = header.get(card_name);
+
+        if(value === undefined) {
+            value = '';
+        }
 
         return value;
     }

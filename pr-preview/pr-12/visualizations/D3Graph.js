@@ -133,6 +133,52 @@ class D3Graph {
         return is_set;
     }
 
+    _initializeSettings(data,
+                       axis,
+                       scales = D3Graph.default_scales,
+                       error_bars = null,
+                       has_line = false,
+                       additional_plots = null) {
+
+        console.log(data);
+
+        console.log(axis);
+        console.log(scales);
+
+        let is_set = false;
+
+        try {
+
+            this.dataset = data;
+
+            this.x_axis_data_col = axis['x'];
+            this.y_axis_data_col = axis['y'];
+
+            this.x_scale_type = scales['x'];
+            this.y_scale_type = scales['y'];
+
+            if (error_bars) {
+                this.has_error_bars = true;
+                this.error_bars = error_bars;
+
+                this.x_axis_data_col_error_bar = axis['x'].value;
+                this.y_axis_data_col_error_bar = axis['y'].value;
+
+            } else {
+                this.has_error_bars = false;
+            }
+
+            this.has_line = has_line;
+
+            is_set = true;
+
+        } catch(e) {
+            console.log("Error during graph settings process")
+        }
+
+        return is_set;
+    }
+
     initializeGraph() {
         try {
             this._setSVGContainer();
@@ -294,7 +340,12 @@ class D3Graph {
         console.log("error bars");
 
         console.log(error_bars);
+        console.log(error_bars.x);
+        console.log(error_bars.y);
         console.log(this.x_axis_data_col);
+        console.log(this.y_axis_data_col);
+
+        let error_bar_x = {x: error_bars.x};
 
         let line_error_bar_x = d3.line()
             .x(d => this.x_scale(d[this.x_axis_data_col]))
@@ -307,6 +358,19 @@ class D3Graph {
                 .attr("stroke", "steelblue")
                 .attr("stroke-width", 1.5)
                 .attr("d", line_error_bar_x(error_bar));
+        })
+
+        let line_error_bar_y = d3.line()
+            .x(d => this.x_scale(d.bound))
+            .y(d => this.y_scale(d[this.y_axis_data_col]));
+
+        error_bars.y.forEach((error_bar) => {
+            this.svg.append("path")
+                .attr("class", "error-bar-x")
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", line_error_bar_y(error_bar));
         })
 
     }
@@ -409,6 +473,19 @@ class D3Graph {
                     .attr("stroke", "steelblue")
                     .attr("stroke-width", 1.5)
                     .attr("d", line_error_bar_x(error_bar));
+            })
+
+            let line_error_bar_y = d3.line()
+                .x(d => rescaled_x(d.bound))
+                .y(d => rescaled_y(d[this.y_axis_data_col]));
+
+            this.error_bars.y.forEach((error_bar) => {
+                this.svg.append("path")
+                    .attr("class", "error-bar-x")
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line_error_bar_y(error_bar));
             })
         }
 

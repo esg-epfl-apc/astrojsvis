@@ -15,6 +15,7 @@ class DataComponent extends HTMLElement {
         this._setContainer();
 
         this.handleFITSLoadedEvent = this.handleFITSLoadedEvent.bind(this);
+        this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
         this.handleSelectChangeEvent = this.handleSelectChangeEvent.bind(this);
 
         this._setupExternalListeners();
@@ -25,6 +26,7 @@ class DataComponent extends HTMLElement {
 
     _setupExternalListeners() {
         this.addEventListener('fits-loaded', this.handleFITSLoadedEvent);
+        this.addEventListener('file-registry-change', this.handleFileChangeEvent);
     }
 
     _setupInnerListeners() {
@@ -70,6 +72,68 @@ class DataComponent extends HTMLElement {
         }
     }
 
+    handleFileChangeEvent() {
+        let current_file_list = FileRegistry.getCurrentFilesList();
+        let columns = [];
+
+        console.log(current_file_list);
+
+        current_file_list.forEach((file) => {
+
+            console.log(file);
+
+            if(file.type === 'fits') {
+                let fits_reader_wrapper = WrapperContainer.getFITSReaderWrapper();
+
+                fits_reader_wrapper.setFile(file.file);
+                let fits_columns = fits_reader_wrapper.getAllColumns();
+
+                fits_columns.forEach((fits_column) => {
+                    let column = {...fits_column, file_id: file.id};
+                    columns.push(column);
+                })
+
+            } else if(file.type === 'csv') {
+
+            }
+        })
+
+        console.log(columns);
+
+        let columns_by_file = columns.reduce((acc, column) => {
+            if (!acc[column.file_id]) {
+                acc[column.file_id] = [];
+            }
+            acc[column.file_id].push(column);
+            return acc;
+        }, {});
+
+        console.log("Columns by file");
+        console.log(columns_by_file);
+
+        let select_options = [];
+
+        let i = 1;
+        for (let file_id in columns_by_file) {
+            if (columns_by_file.hasOwnProperty(file_id)) {
+                console.log(columns_by_file[file_id]);
+                console.log(i);
+                let file = FileRegistry.getFileById(file_id);
+                let file_name = file.file_name;
+
+                let frw = WrapperContainer.getFITSReaderWrapper();
+                frw.setFile(file.file);
+
+                select_options.push(this._createFileColumnsOptionsGroup(columns_by_file[file_id], file_name, 'opt-group', frw));
+            }
+            i++;
+        }
+
+        console.log(select_options);
+
+        this._setSelect(select_options);
+    }
+
     handleSelectChangeEvent(event) {
         event.stopPropagation();
         let hdu_index = event.detail.hdu_index;
@@ -104,6 +168,17 @@ class DataComponent extends HTMLElement {
         });
     }
 
+    _setSelect(option_groups) {
+        this.resetSelect();
+
+        let select = document.getElementById(DataComponent.select_hdus_id);
+
+        option_groups.forEach((option_group) => {
+            select.add(option_group);
+        });
+
+    }
+
     resetSelect() {
         let select = document.getElementById(DataComponent.select_hdus_id);
         select.innerHTML = '';
@@ -125,6 +200,31 @@ class DataComponent extends HTMLElement {
         })
 
         return options;
+    }
+
+    _createFileColumnsOptionsGroup(file_columns, group_name, group_class, fits_reader_wrapper) {
+
+        let opt_group = document.createElement("optgroup");
+        opt_group.label = group_name;
+        opt_group.className += group_class;
+
+        file_columns.forEach(column => {
+            let option = document.createElement("option");
+
+            let hdu_type = fits_reader_wrapper.getHeaderCardValueByNameFromHDU(column.hdu_index, 'XTENSION');
+            let hdu_extname = fits_reader_wrapper.getHeaderCardValueByNameFromHDU(column.hdu_index, 'EXTNAME');
+            let name = hdu_type+'-'+hdu_extname+' '+column.name;
+
+            if(column.is_from_header) {
+                name += '(HEADER)';
+            }
+
+            option.text = name;
+            option.value = `${column.file_id}.${column.hdu_index}$${column.name}`;
+            opt_group.appendChild(option);
+        });
+
+        return opt_group
     }
 
     setTable(hdu_columns_name, hdu_data) {

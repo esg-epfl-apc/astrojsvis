@@ -70,29 +70,92 @@ class D3Wrapper {
 
             this.resetContainer();
 
+            let dataset_settings = {};
+
             let data_type = this.settings_object.getDataTypeSettings();
             let hdu = this.settings_object.getHDUsSettings();
             let axis = this.settings_object.getAxisSettings();
+
+            console.log(axis);
+
+            let axis_settings = [];
+            for(let axis_column in axis) {
+                console.log(axis_column);
+                let axis_column_object = this._getColumnSettings(axis[axis_column]);
+                axis_column_object = {...axis_column_object, ...{axis: axis_column}}
+
+                console.log(axis_column_object);
+                axis_settings.push(axis_column_object);
+            }
+
+            dataset_settings.axis = axis_settings;
+
             let scales = this.settings_object.getScalesSettings();
 
             let has_error_bars = false;
             let error_bars = this.settings_object.getErrorBarsSettings();
 
+            console.log('ERROR BAR CHECK');
+            console.log(error_bars);
+
             if(error_bars !== null) {
                 has_error_bars = true;
+
+                console.log(error_bars);
+
+                let error_bars_settings = [];
+                for(let axis_column in error_bars) {
+                    console.log(axis_column);
+                    let axis_column_object = this._getColumnSettings(error_bars[axis_column]);
+                    axis_column_object = {...axis_column_object, ...{axis: axis_column}}
+
+                    console.log(axis_column_object);
+                    error_bars_settings.push(axis_column_object);
+                    console.log(error_bars_settings);
+                }
+
+                dataset_settings.error_bars = error_bars_settings;
             }
 
-            let data = this.getProcessedData(data_type.type, hdu['hdu_index'], axis, error_bars);
+            let dpp = DataProcessorContainer.getDataProcessorContainer().getDataPreProcessor();
 
-            console.log(data);
+            let processed_data = dpp.getProcessedDataset(dataset_settings);
+
+            console.log(processed_data);
+
+            let processed_json_data = dpp.datasetToJSONData(processed_data);
+
+            console.log(processed_json_data);
+
+
+            //let data = this.getProcessedData(data_type.type, hdu['hdu_index'], axis, error_bars);
+            //let data = this.getProcessedData(data_type.type, 1, axis, error_bars);
+
+            //console.log(data);
 
             let visualization = VisualizationContainer.getD3Visualization();
 
+            axis = {x: processed_data.axis[0].column_name, y: processed_data.axis[1].column_name};
+
             if(has_error_bars) {
-                error_bars = data.error_bars;
+                //error_bars = data.error_bars;
+
+                console.log('ERROR BARS');
+                error_bars = {x: processed_data.error_bars[0].column_name, y: processed_data.error_bars[1].column_name};
+
+                error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars)
             }
 
-            visualization.initializeSettings(data.main, axis, scales, error_bars, false, null);
+            //console.log(data.main);
+            console.log("GRAPH DATA");
+            console.log(error_bars);
+
+            console.log(processed_json_data);
+            console.log(axis);
+            console.log(scales);
+
+            //visualization.initializeSettings(data.main, axis, scales, error_bars, false, null);
+            visualization.initializeSettings(processed_json_data, axis, scales, error_bars, false, null);
 
             visualization.initializeGraph();
         }
@@ -169,6 +232,22 @@ class D3Wrapper {
         data = data_processor.processDataJSON(axis, error_bars);
 
         return data;
+    }
+
+    _getColumnSettings(column_settings) {
+        let settings = column_settings.split('$');
+
+        let column_location = settings[0].split('.');
+        let column_name = settings[1] || '';
+
+        let file_id = column_location[0];
+        let hdu_index = column_location.length > 1 ? column_location[1] : '';
+
+        return {
+            file_id: file_id,
+            hdu_index: hdu_index,
+            column_name: column_name
+        };
     }
 
     getGraphByIndex(index) {

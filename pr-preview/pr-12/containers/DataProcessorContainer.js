@@ -4,6 +4,10 @@ class DataProcessorContainer {
 
     }
 
+    getDataPreProcessor() {
+        return new DataPreProcessor();
+    }
+
     getLightCurveProcessor(fits_reader_wrapper, hdu_index) {
         return new LightCurveProcessor(fits_reader_wrapper, hdu_index);
     }

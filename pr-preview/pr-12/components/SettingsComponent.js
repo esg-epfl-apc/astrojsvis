@@ -15,6 +15,8 @@ class SettingsComponent extends HTMLElement {
 
     static select_hdus_id = "select-hdus";
 
+    static calculation_radio_class = "calculation-radio";
+
     static select_axis_x_id = "select-axis-x";
     static select_axis_y_id = "select-axis-y";
 
@@ -67,6 +69,7 @@ class SettingsComponent extends HTMLElement {
         this._setSelectDataTypeListener()
         this._setSelectHDUsListener();
         this._setGenerateButtonListener();
+        this._setCalculationRadioListeners();
     }
 
     handleFITSLoadedEvent(event) {
@@ -169,6 +172,8 @@ class SettingsComponent extends HTMLElement {
 
         current_file_list.forEach((file) => {
 
+            console.log(file);
+
             if(file.type === 'fits') {
                 let fits_reader_wrapper = WrapperContainer.getFITSReaderWrapper();
 
@@ -186,6 +191,40 @@ class SettingsComponent extends HTMLElement {
         })
 
         console.log(columns);
+
+        let columns_by_file = columns.reduce((acc, column) => {
+            if (!acc[column.file_id]) {
+                acc[column.file_id] = [];
+            }
+            acc[column.file_id].push(column);
+            return acc;
+        }, {});
+
+        console.log("Columns by file");
+        console.log(columns_by_file);
+
+        let select_options = [];
+
+        let i = 1;
+        for (let file_id in columns_by_file) {
+            if (columns_by_file.hasOwnProperty(file_id)) {
+                console.log(columns_by_file[file_id]);
+                console.log(i);
+                let file = FileRegistry.getFileById(file_id);
+                let file_name = file.file_name;
+
+                let frw = WrapperContainer.getFITSReaderWrapper();
+                frw.setFile(file.file);
+
+                select_options.push(this._createFileColumnsOptionsGroup(columns_by_file[file_id], file_name, 'opt-group', frw));
+            }
+            i++;
+        }
+
+        console.log(select_options);
+
+        this._setSelectGroupAxis(select_options);
+        this._setSelectGroupErrorBars(select_options);
     }
 
     _setContainer() {
@@ -231,6 +270,31 @@ class SettingsComponent extends HTMLElement {
         return options;
     }
 
+    _createFileColumnsOptionsGroup(file_columns, group_name, group_class, fits_reader_wrapper) {
+
+        let opt_group = document.createElement("optgroup");
+        opt_group.label = group_name;
+        opt_group.className += group_class;
+
+        file_columns.forEach(column => {
+            let option = document.createElement("option");
+
+            let hdu_type = fits_reader_wrapper.getHeaderCardValueByNameFromHDU(column.hdu_index, 'XTENSION');
+            let hdu_extname = fits_reader_wrapper.getHeaderCardValueByNameFromHDU(column.hdu_index, 'EXTNAME');
+            let name = hdu_type+'-'+hdu_extname+' '+column.name;
+
+            if(column.is_from_header) {
+                name += '(HEADER)';
+            }
+
+            option.text = name;
+            option.value = `${column.file_id}.${column.hdu_index}$${column.name}`;
+            opt_group.appendChild(option);
+        });
+
+        return opt_group
+    }
+
     _setSelectAxis(columns) {
         this._resetSelectAxis();
 
@@ -247,6 +311,23 @@ class SettingsComponent extends HTMLElement {
                 select.add(cloned_option);
             })
         });
+    }
+
+    _setSelectGroupAxis(columns_optgroup) {
+        this._resetSelectAxis();
+
+        let select_axis_x = document.getElementById(SettingsComponent.select_axis_x_id);
+        let select_axis_y = document.getElementById(SettingsComponent.select_axis_y_id);
+
+        let select_axis = [select_axis_x, select_axis_y];
+
+        columns_optgroup.forEach((column_optgroup) => {
+            select_axis.forEach((select) => {
+                let cloned_optgroup = column_optgroup.cloneNode(true);
+                select.add(cloned_optgroup);
+            })
+        })
+
     }
 
     _resetSelectAxis() {
@@ -273,6 +354,22 @@ class SettingsComponent extends HTMLElement {
                 select.add(cloned_option);
             })
         });
+    }
+
+    _setSelectGroupErrorBars(columns_optgroup) {
+        this._resetSelectErrorBars();
+
+        let select_error_bar_x = document.getElementById(SettingsComponent.select_error_bar_x_id);
+        let select_error_bar_y = document.getElementById(SettingsComponent.select_error_bar_y_id);
+
+        let select_error_bars = [select_error_bar_x, select_error_bar_y];
+
+        columns_optgroup.forEach((column_optgroup) => {
+            select_error_bars.forEach((select) => {
+                let cloned_optgroup = column_optgroup.cloneNode(true);
+                select.add(cloned_optgroup);
+            })
+        })
     }
 
     _resetSelectErrorBars() {
@@ -351,6 +448,16 @@ class SettingsComponent extends HTMLElement {
             });
 
             this.dispatchEvent(custom_change_event);
+        });
+    }
+
+    _setCalculationRadioListeners() {
+        let radio_buttons = document.querySelectorAll('.' + SettingsComponent.calculation_radio_class);
+        radio_buttons.forEach(radio_button => {
+            radio_button.addEventListener('change', event => {
+                console.log(event.target);
+                console.log(event.target.value);
+            });
         });
     }
 

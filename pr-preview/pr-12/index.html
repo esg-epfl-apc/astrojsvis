@@ -33,6 +33,7 @@
     <script src="wrappers/BokehWrapper.js"></script>
     <script src="wrappers/D3Wrapper.js"></script>
 
+    <script src="data_processors/DataPreProcessor.js"></script>
     <script src="data_processors/LightCurveProcessor.js"></script>
     <script src="data_processors/SpectrumProcessor.js"></script>
 
@@ -45,6 +46,7 @@
 
     <script src="settings/VisualizationSettings.js"></script>
     <script src="settings/SettingsConfiguration.js"></script>
+    <script src="settings/DatasetSettings.js"></script>
 
     <script src="components/FileComponent.js"></script>
     <script src="components/VisualizationComponent.js"></script>
@@ -87,20 +89,19 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Two equal-width columns */
-            grid-template-rows: auto auto auto; /* Automatically size rows */
-            gap: 20px; /* Gap between grid items */
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto auto auto;
+            gap: 20px;
         }
 
         .full-width-column {
-            grid-column: 1 / span 2; /* Span across both columns */
+            grid-column: 1 / span 2;
         }
 
         .left-column, .right-column {
             padding: 10px;
         }
 
-        /* Styling for list-group items */
         .list-group {
             display: flex;
             flex-direction: column;
@@ -108,10 +109,20 @@
         }
 
         .list-group-item {
-            /* Your button styles */
+
         }
 
+        .opt-group0 {
+            background-color: lightgray;
+        }
 
+        .opt-group0 option {
+
+        }
+
+        .opt-group1 {
+
+        }
 
         #column-file select {
             margin: 10px;
@@ -189,6 +200,15 @@
             display: none;
         }
 
+        #hdus-settings {
+            display: none;
+        }
+
+        .inner-row {
+            display: grid;
+            grid-template-columns: 0.6fr 1fr;
+        }
+
     </style>
 </head>
 <body>
@@ -231,7 +251,6 @@
                                 <div class="card-header">Current files</div>
                                 <div class="card-body">
                                     <div id="current-files-list" class="list-group">
-                                        <!--button type="button" class="list-group-item list-group-item-action active" aria-current="true"></button!-->
                                     </div>
                                 </div>
                             </div>
@@ -240,8 +259,48 @@
                             <div class="card">
                                 <div class="card-header">File settings</div>
                                 <div class="card-body">
+                                    <select id="select-hdu-file" class="form-select">
+
+                                    </select>
+
+                                    <div class="inner-row">
+                                        <div class="left-column">
+                                            <div class="card">
+                                                <div class="card-header">Header</div>
+                                                <div class="card-body">
+                                                    <div id="header-hdu-file">
+                                                        <table id="table-header-data" class="table table-striped">
+                                                            <thead>
+                                                            <tr>
+                                                                <th scope="col">#</th>
+                                                                <th scope="col">Name</th>
+                                                                <th scope="col">Value</th>
+                                                                <th scope="col">Comment</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody class="table-group-divider">
+
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="right-column">
+                                            <div class="card">
+                                                <div class="card-header">Data</div>
+                                                <div class="card-body">
+                                                    <div id="data-hdu-file">
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <button class="btn btn-success" id="save-file-settings">Save changes</button>
                                     <button class="btn btn-primary" id="add-to-plot">Add to plot</button>
+                                    <button class="btn btn-danger" id="remove-from-plot">Remove from plot</button>
                                 </div>
                             </div>
                         </div>
@@ -271,7 +330,6 @@
                                 <div class="card-body">
                                     <h6 class="card-title">Library Selection</h6>
                                     <select id="select-library" class="form-select">
-                                        <option selected>Library</option>
                                         <option value="d3">D3</option>
                                         <option value="bokeh">Bokeh</option>
                                     </select>
@@ -332,6 +390,12 @@
                             <div id="axis-settings" class="card">
                                 <div id="card-body-axis" class="card-body">
                                     <h6 class="card-title">Axis Settings</h6>
+                                    <input type="radio" id="standard-radio-x" class="radio-calculation" name="calculation-type-x" value="standard">
+                                    <label for="standard-radio-x">Standard</label>
+
+                                    <input type="radio" id="arithmetic-radio-x" class="radio-calculation" name="calculation-type-x" value="arithmetic">
+                                    <label for="arithmetic-radio-x">Arithmetic</label>
+
                                     <select id="select-axis-x" class="form-select select-axis">
                                         <option selected>X axis</option>
                                     </select>
@@ -339,6 +403,13 @@
                                         <option value="linear" selected>Linear</option>
                                         <option value="log" selected>Log</option>
                                     </select>
+
+                                    <input type="radio" id="standard-radio-y" class="radio-calculation" name="calculation-type-y" value="standard">
+                                    <label for="standard-radio-y">Standard</label>
+
+                                    <input type="radio" id="arithmetic-radio-y" class="radio-calculation" name="calculation-type-y" value="arithmetic">
+                                    <label for="arithmetic-radio-y">Arithmetic</label>
+
                                     <select id="select-axis-y" class="form-select select-axis">
                                         <option selected>Y axis</option>
                                     </select>

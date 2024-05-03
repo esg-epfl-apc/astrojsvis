@@ -15,6 +15,7 @@ class FileComponent extends HTMLElement {
 
     static save_button_id = 'save-file-settings';
     static add_button_id = 'add-to-plot'
+    static remove_button_id = 'remove-from-plot'
 
     fits_reader_wrapper = null;
 
@@ -106,6 +107,9 @@ class FileComponent extends HTMLElement {
         file_input.addEventListener('change', function(event) {
             let file = event.target.files[0];
 
+            console.log("FILE INFO");
+            console.log(file);
+
             console.log(type_input);
             console.log(file_type);
 
@@ -115,7 +119,7 @@ class FileComponent extends HTMLElement {
 
                     let fits_reader_wrapper = WrapperContainer.getFITSReaderWrapper();
 
-                    fits_reader_wrapper.initializeFromBuffer(arrayBuffer);
+                    fits_reader_wrapper.initializeFromBuffer(arrayBuffer, file.name);
 
                 }).catch(error => {
                     console.error('Error reading file as ArrayBuffer:', error);
@@ -211,6 +215,8 @@ class FileComponent extends HTMLElement {
         console.log("File loaded");
         console.log(event);
 
+        console.log(event.detail);
+
         FileRegistry.addToAvailableFiles(event.detail);
         console.log(FileRegistry.getAvailableFilesList());
 
@@ -260,10 +266,34 @@ class FileComponent extends HTMLElement {
         console.log(file);
         let save_button = document.getElementById(FileComponent.save_button_id);
         let add_button = document.getElementById(FileComponent.add_button_id);
+        let remove_button = document.getElementById(FileComponent.remove_button_id);
+
+        let select_hdu = document.getElementById('select-hdu-file');
+        select_hdu.innerHTML = '';
 
         save_button.setAttribute("data-id", file.id);
         add_button.setAttribute("data-id", file.id);
+        remove_button.setAttribute("data-id", file.id);
 
+        let frw = WrapperContainer.getFITSReaderWrapper();
+        frw.setFile(file.file);
+
+        let hdus = frw.getHDUs();
+        console.log(hdus);
+
+        let options = [];
+        hdus.forEach((hdu) => {
+            let option = document.createElement("option");
+
+            option.value = hdu.index;
+            option.text = hdu.name + ' ' + hdu.extname;
+
+            options.push(option);
+        })
+
+        options.forEach((option) => {
+            select_hdu.add(option);
+        })
     }
 
     _addFileToSelect(file) {
