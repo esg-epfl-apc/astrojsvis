@@ -78,22 +78,73 @@ class BokehWrapper {
 
             this._resetContainer();
 
+            let dataset_settings = {};
+
+            let axis = this.settings_object.getAxisSettings();
+            let axis_settings = [];
+
+            for(let axis_column in axis) {
+                let axis_column_object = this._getColumnSettings(axis[axis_column]);
+                axis_column_object = {...axis_column_object, ...{axis: axis_column}}
+
+                axis_settings.push(axis_column_object);
+            }
+
+            dataset_settings.axis = axis_settings;
+
+            let error_bars = this.settings_object.getErrorBarsSettings();
+            let has_error_bars = false;
+
+            if(error_bars !== null) {
+
+                let error_bars_settings = [];
+                for(let axis_column in error_bars) {
+                    let axis_column_object = this._getColumnSettings(error_bars[axis_column]);
+                    axis_column_object = {...axis_column_object, ...{axis: axis_column}}
+
+                    error_bars_settings.push(axis_column_object);
+                }
+
+                dataset_settings.error_bars = error_bars_settings;
+
+            }
+
+            let dpp = DataProcessorContainer.getDataProcessorContainer().getDataPreProcessor();
+
+            let processed_data = dpp.getProcessedDataset(dataset_settings);
+
+            console.log(processed_data);
+
+            let processed_json_data = dpp.datasetToJSONData(processed_data);
+
             let data_type = this.settings_object.getDataTypeSettings();
             let hdu = this.settings_object.getHDUsSettings();
 
-            let axis = this.settings_object.getAxisSettings();
-            let labels = axis;
-
             let scales = this.settings_object.getScalesSettings();
 
-            let has_error_bars = false;
-            let error_bars = this.settings_object.getErrorBarsSettings();
 
-            if(error_bars !== null) {
-                has_error_bars = true;
+            axis = {x: processed_data.axis[0].column_name, y: processed_data.axis[1].column_name};
+            let labels = axis;
+
+            console.log(axis);
+            console.log(processed_json_data);
+
+            //let data = this.getProcessedData(data_type.type, hdu['hdu_index'], axis, error_bars);
+
+            let data = {x: processed_data.axis[0].data, y: processed_data.axis[1].data};
+
+            if(error_bars) {
+                error_bars = {x: processed_data.error_bars[0].column_name, y: processed_data.error_bars[1].column_name};
+
+                //error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars)
+
+                data.dx = processed_data.error_bars[0].data;
+                data.dy = processed_data.error_bars[1].data;
+
+                this._processErrorBarData(data);
             }
 
-            let data = this.getProcessedData(data_type.type, hdu['hdu_index'], axis, error_bars);
+            console.log(error_bars);
 
             let visualization = VisualizationContainer.getBokehVisualization();
 
@@ -130,6 +181,22 @@ class BokehWrapper {
         return data;
     }
 
+    _getColumnSettings(column_settings) {
+        let settings = column_settings.split('$');
+
+        let column_location = settings[0].split('.');
+        let column_name = settings[1] || '';
+
+        let file_id = column_location[0];
+        let hdu_index = column_location.length > 1 ? column_location[1] : '';
+
+        return {
+            file_id: file_id,
+            hdu_index: hdu_index,
+            column_name: column_name
+        };
+    }
+
     _processErrorBarData(data) {
 
         let y_low = [], y_up = [], x_low = [], x_up = [];
@@ -143,8 +210,8 @@ class BokehWrapper {
         for (let i in data.dy) {
             y_low[i] = data.y[i] - data.dy[i];
             y_up[i] = data.y[i] + data.dy[i];
-            x_low[i] = data.x[i] - data.timedel[i] / 2;
-            x_up[i] = data.x[i] + data.timedel[i] / 2;
+            x_low[i] = data.x[i] - data.dx[i] / 2;
+            x_up[i] = data.x[i] + data.dx[i] / 2;
         }
 
         data.y_low = y_low;
@@ -153,7 +220,7 @@ class BokehWrapper {
         data.x_up = x_up;
 
         delete data.dy;
-        delete data.timedel;
+        delete data.dx;
 
         return data;
     }
