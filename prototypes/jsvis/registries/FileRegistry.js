@@ -11,10 +11,12 @@ class FileRegistry {
     }
 
     static getAvailableFilesList() {
+        FileRegistry.available_files = FileRegistry.available_files.filter(obj => obj !== undefined);
         return FileRegistry.available_files;
     }
 
     static getCurrentFilesList() {
+        FileRegistry.current_files = FileRegistry.current_files.filter(obj => obj !== undefined);
         return FileRegistry.current_files;
     }
 
@@ -29,6 +31,8 @@ class FileRegistry {
     }
 
     static moveToAvailableFiles(file) {
+        console.log("AVAILABLE");
+        console.log(file);
         FileRegistry.available_files.push(file);
     }
 
@@ -46,12 +50,18 @@ class FileRegistry {
         FileRegistry.current_files.push(file);
         FileRegistry.removeFromAvailableFiles(file.id);
 
+        console.log("CURRENT LIST");
         console.log(FileRegistry.current_files);
         console.log(FileRegistry.available_files);
     }
 
     static removeFromCurrentFiles(file_id) {
+        //let temp_deep_list = JSON.parse(JSON.stringify(FileRegistry.current_files));
         let file = FileRegistry.current_files.find(file => file.id === parseInt(file_id));
+        console.log("CURRENT");
+        console.log(file_id);
+        console.log(FileRegistry.current_files);
+        console.log(file);
         FileRegistry.current_files = FileRegistry.current_files.filter(file => file.id !== parseInt(file_id));
 
         FileRegistry.moveToAvailableFiles(file);
@@ -67,6 +77,16 @@ class FileRegistry {
         console.log(file);
 
         return file;
+    }
+
+    static isFileCurrent(file_id) {
+        let is_current = false;
+
+        if(FileRegistry.current_files.some(file => file.id === parseInt(file_id))) {
+            is_current = true;
+        }
+
+        return is_current;
     }
 
     static _saveToLocalStorage() {
@@ -88,7 +108,7 @@ class FileRegistry {
     }
 
     static sendRegistryChangeEvent() {
-        let frce = new FileRegistryChangedEvent();
+        let frce = new FileRegistryChangeEvent();
 
         frce.dispatchToSubscribers();
     }

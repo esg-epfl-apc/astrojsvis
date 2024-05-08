@@ -53,6 +53,8 @@
     <script src="components/SettingsComponent.js"></script>
     <script src="components/HeaderComponent.js"></script>
     <script src="components/DataComponent.js"></script>
+    <script src="components/file_type/FITSSettingsComponent.js"></script>
+    <script src="components/file_type/CSVSettingsComponent.js"></script>
 
     <script src="utils/ObjectUtils.js"></script>
 
@@ -137,6 +139,10 @@
             width: 50%;
         }
 
+        #file-settings-container {
+            width: 100%;
+        }
+
         .column-graph {
             background-color: lightblue;
             padding: 20px;
@@ -178,7 +184,18 @@
             margin-bottom: 5px;
         }
 
+        .file-data-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
         #table-header-data {
+            border-top: 1px solid lightgray;
+            border-left: 1px solid lightgray;
+            border-right: 1px solid lightgray;
+        }
+
+        #table-data {
             border-top: 1px solid lightgray;
             border-left: 1px solid lightgray;
             border-right: 1px solid lightgray;
@@ -255,7 +272,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="full-width-column" style="grid-column: 1 / span 2;">
+                        <!--div class="full-width-column" style="grid-column: 1 / span 2;">
                             <div class="card">
                                 <div class="card-header">File settings</div>
                                 <div class="card-body">
@@ -303,6 +320,9 @@
                                     <button class="btn btn-danger" id="remove-from-plot">Remove from plot</button>
                                 </div>
                             </div>
+                        </div-->
+                        <div id="file-settings-container" class="full-width-column">
+
                         </div>
                     </div>
 
