@@ -6,12 +6,6 @@ let bokeh_wrapper = new BokehWrapper();
 
 let d3_wrapper = new D3Wrapper();
 
-FileRegistry.addToAvailableFiles({
-    file_name: file_path,
-    type: 'fits',
-    raw_content: ''
-});
-
 WrapperContainer.setFITSReaderWrapper(fits_reader_wrapper);
 WrapperContainer.setBokehWrapper(bokeh_wrapper);
 WrapperContainer.setD3Wrapper(d3_wrapper);
@@ -24,3 +18,5 @@ customElements.define('header-component', HeaderComponent);
 customElements.define('data-component', DataComponent);
 customElements.define('settings-component', SettingsComponent);
 customElements.define('visualization-component', VisualizationComponent);
+customElements.define('fits-component', FITSSettingsComponent);
+customElements.define('csv-component', CSVSettingsComponent);

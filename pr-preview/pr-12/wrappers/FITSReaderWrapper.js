@@ -171,6 +171,8 @@ class FITSReaderWrapper {
 
     getColumnsJSONDataFromHDU(hdu_index) {
 
+        console.log("GET JSON DATA FITS");
+
         let hdu = this.file.getHDU(hdu_index);
 
         let header = hdu.header;
@@ -185,11 +187,15 @@ class FITSReaderWrapper {
         if(type === FITSReaderWrapper.BINTABLE || type === FITSReaderWrapper.TABLE) {
             data.columns.forEach(function(column) {
 
-                data.getColumn(column, function(col){
-                    console.log("FRW data col")
-                    console.log(col);
-                    column_data = col;
-                })
+                try {
+                    data.getColumn(column, function (col) {
+                        console.log("FRW data col")
+                        console.log(col);
+                        column_data = col;
+                    })
+                } catch(e) {
+                    console.log(e);
+                }
 
                 raw_columns_data_array[column] = column_data;
             })

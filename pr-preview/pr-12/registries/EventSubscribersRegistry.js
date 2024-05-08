@@ -1,11 +1,11 @@
 class EventSubscribersRegistry {
 
     static events_subscribers = {
-        'fits-loaded': ['header-component', 'data-component', 'settings-component', 'file-component'],
+        'fits-loaded': ['settings-component', 'file-component'],
         'configuration': ['settings-component'],
         'file-loaded': ['file-component'],
         'file-selected': ['header-component', 'data-component', 'settings-component'],
-        'file-registry-change': ['header-component', 'data-component', 'settings-component']
+        'file-registry-change': ['header-component', 'data-component', 'settings-component', 'file-component']
     }
 
     constructor() {
