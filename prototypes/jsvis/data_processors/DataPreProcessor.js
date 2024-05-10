@@ -18,7 +18,22 @@ class DataPreProcessor {
             let frw = WrapperContainer.getFITSReaderWrapper();
             frw.setFile(file_object.file);
 
-            let column_data = frw.getColumnDataFromHDU(axis.hdu_index, axis.column_name);
+            let column_data;
+
+            console.log("PREPROCESSING");
+            console.log(dataset_settings_object.type);
+            console.log(axis.column_name);
+
+            if(dataset_settings_object.data_type.type === 'spectrum' &&
+                SpectrumProcessor.processed_columns_name.includes(axis.column_name)) {
+
+                console.log("SPECTRUM");
+
+                column_data = this.getSpectrumProcessedColumn(axis.hdu_index, axis.column_name, frw)
+            } else {
+                column_data = frw.getColumnDataFromHDU(axis.hdu_index, axis.column_name);
+            }
+
             console.log(column_data);
 
             axis.data = column_data;
@@ -35,7 +50,17 @@ class DataPreProcessor {
                 let frw = WrapperContainer.getFITSReaderWrapper();
                 frw.setFile(file_object.file);
 
-                let column_data = frw.getColumnDataFromHDU(error_bar.hdu_index, error_bar.column_name);
+                let column_data;
+
+                if(dataset_settings_object.data_type.type === 'spectrum' &&
+                    SpectrumProcessor.processed_columns_name.includes(error_bar.column_name)) {
+
+                    console.log("SPECTRUM");
+
+                    column_data = this.getSpectrumProcessedColumn(error_bar.hdu_index, error_bar.column_name, frw)
+                } else {
+                    column_data = frw.getColumnDataFromHDU(error_bar.hdu_index, error_bar.column_name);
+                }
                 console.log(column_data);
 
                 error_bar.data = column_data;
@@ -59,6 +84,9 @@ class DataPreProcessor {
                 if (!rows[index]) {
                     rows[index] = {};
                 }
+                console.log(value);
+                //if(isNaN(parseInt(value))) { value = 0; }
+                console.log(value);
                 rows[index][axis.column_name] = value;
             });
 
@@ -133,4 +161,22 @@ class DataPreProcessor {
         return { x: error_bar_x_values, y: error_bar_y_values }
     }
 
+    getSpectrumProcessedColumn(hdu_index, column_name, fits_reader_wrapper) {
+        let processed_column = [];
+
+        let sp = DataProcessorContainer.getDataProcessorContainer().getSpectrumProcessor();
+
+        let e_min_col = fits_reader_wrapper.getColumnDataFromHDU(hdu_index, "E_MIN");
+        let e_max_col = fits_reader_wrapper.getColumnDataFromHDU(hdu_index, "E_MAX");
+
+        console.log("E_MAX E_MIN");
+        console.log(e_min_col);
+        console.log(e_max_col);
+
+        e_min_col.forEach((e_min, index) => {
+            processed_column.push(SpectrumProcessor.spectrum_col_functions[column_name](e_min, e_max_col[index]));
+        })
+
+        return processed_column;
+    }
 }

@@ -287,8 +287,14 @@ class SettingsComponent extends HTMLElement {
                 name += '(HEADER)';
             }
 
-            option.text = name;
-            option.value = `${column.file_id}.${column.hdu_index}$${column.name}`;
+            if(column.is_processed) {
+                option.text = name;
+                option.value = `${column.from_file}.${column.hdu_index}$${column.name}`;
+            } else {
+                option.text = name;
+                option.value = `${column.file_id}.${column.hdu_index}$${column.name}`;
+            }
+            
             opt_group.appendChild(option);
         });
 

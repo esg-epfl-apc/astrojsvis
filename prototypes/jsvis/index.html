@@ -57,6 +57,7 @@
     <script src="components/file_type/CSVSettingsComponent.js"></script>
 
     <script src="utils/ObjectUtils.js"></script>
+    <script src="utils/StringUtils.js"></script>
 
     <script>
 
@@ -223,7 +224,7 @@
 
         .inner-row {
             display: grid;
-            grid-template-columns: 0.6fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(50%, 1fr));
         }
 
     </style>
