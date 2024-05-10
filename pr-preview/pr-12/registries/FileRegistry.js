@@ -22,12 +22,16 @@ class FileRegistry {
 
     static addToAvailableFiles(file_to_add) {
         console.log(FileRegistry.file_counter);
-        let file = { ...file_to_add, id: FileRegistry.file_counter};
+        let file = { ...file_to_add,
+            id: FileRegistry.file_counter,
+            file_name: StringUtils.cleanFileName(file_to_add.file_name)
+        };
 
         FileRegistry.available_files.push(file);
 
         FileRegistry.file_counter++;
         console.log(FileRegistry.file_counter);
+        console.log(file);
     }
 
     static moveToAvailableFiles(file) {
@@ -73,6 +77,18 @@ class FileRegistry {
         console.log(file_array);
 
         let file = file_array.find(file => file.id === parseInt(file_id));
+
+        console.log(file);
+
+        return file;
+    }
+
+    static getFileByName(file_name) {
+        let file_array = [...FileRegistry.available_files, ...FileRegistry.current_files];
+
+        console.log(file_array);
+
+        let file = file_array.find(file => file.file_name === file_name);
 
         console.log(file);
 

@@ -78,6 +78,8 @@ class D3Wrapper {
 
             console.log(axis);
 
+            dataset_settings.data_type = data_type;
+
             let axis_settings = [];
             for(let axis_column in axis) {
                 console.log(axis_column);

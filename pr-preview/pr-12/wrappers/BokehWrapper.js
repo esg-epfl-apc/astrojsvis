@@ -91,6 +91,7 @@ class BokehWrapper {
             }
 
             dataset_settings.axis = axis_settings;
+            dataset_settings.data_type = this.settings_object.getDataTypeSettings();
 
             let error_bars = this.settings_object.getErrorBarsSettings();
             let has_error_bars = false;
@@ -131,20 +132,28 @@ class BokehWrapper {
 
             //let data = this.getProcessedData(data_type.type, hdu['hdu_index'], axis, error_bars);
 
+            processed_data.axis[0].data = processed_data.axis[0].data.map(value => isNaN(value) ? 0 : value);
+            processed_data.axis[1].data = processed_data.axis[1].data.map(value => isNaN(value) ? 0 : value);
+
+
             let data = {x: processed_data.axis[0].data, y: processed_data.axis[1].data};
 
             if(error_bars) {
                 error_bars = {x: processed_data.error_bars[0].column_name, y: processed_data.error_bars[1].column_name};
 
+                processed_data.error_bars[0].data = processed_data.error_bars[0].data.map(value => !isFinite(value) ? 0 : value);
+                processed_data.error_bars[1].data = processed_data.error_bars[1].data.map(value => !isFinite(value) ? 0 : value);
+
                 //error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars)
 
-                data.dx = processed_data.error_bars[0].data;
-                data.dy = processed_data.error_bars[1].data;
+                data.dx = processed_data.error_bars[0].data.map(value => isNaN(value) ? 0 : value);
+                data.dy = processed_data.error_bars[1].data.map(value => isNaN(value) ? 0 : value);
 
                 this._processErrorBarData(data);
             }
 
             console.log(error_bars);
+            console.log(data);
 
             let visualization = VisualizationContainer.getBokehVisualization();
 

@@ -6,14 +6,16 @@ class FITSReaderWrapper {
     static BINTABLE = 'BINTABLE';
     static TABLE = 'TABLE';
 
-    constructor(file_path) {
+    constructor(file_path = null) {
 
-        if(FITSReaderWrapper.is_path_valid(file_path)) {
-            this.file_path = file_path;
-            this._getFile()
-        } else {
-            console.log("Invalid file path");
-            throw new InvalidURLError("Invalid file path : " + file_path);
+        if(file_path) {
+            if (FITSReaderWrapper.is_path_valid(file_path)) {
+                this.file_path = file_path;
+                this._getFile()
+            } else {
+                console.log("Invalid file path");
+                throw new InvalidURLError("Invalid file path : " + file_path);
+            }
         }
     }
 
@@ -107,6 +109,23 @@ class FITSReaderWrapper {
         return HDUs;
     }
 
+    getTabularHDUs() {
+        let tabular_hdus_index = [];
+
+        console.log(this.file);
+
+        this.file.hdus.forEach(function(hdu, index) {
+
+            if (hdu.header.primary !== true) {
+                if(hdu.header.get('XTENSION') === "TABLE" || hdu.header.get('XTENSION') === "BINTABLE") {
+                    tabular_hdus_index.push(index);
+                }
+            }
+        })
+
+        return tabular_hdus_index;
+    }
+
     getNumberOfColumnFromHDU(hdu_index) {
         let hdu = this.file.getHDU(hdu_index);
 
@@ -155,6 +174,9 @@ class FITSReaderWrapper {
 
         let columns = [];
         let column_name;
+
+        console.log(hdu);
+        console.log(type);
 
         if(type === FITSReaderWrapper.BINTABLE || type === FITSReaderWrapper.TABLE) {
             data.columns.forEach(function (column) {
@@ -356,6 +378,75 @@ class FITSReaderWrapper {
                     }
 
                     columns.push(column);
+                }
+
+                if(hdu.header.get('ANCRFILE') !== null) {
+                    let ancrfile = FileRegistry.getFileByName(
+                        StringUtils.cleanFileName(hdu.header.get('ANCRFILE'))
+                    );
+
+                    let frw = new FITSReaderWrapper();
+
+                    frw.setFile(ancrfile.file);
+
+
+                }
+
+                if(hdu.header.get('RESPFILE') !== null) {
+                    let respfile = FileRegistry.getFileByName(
+                        StringUtils.cleanFileName(hdu.header.get('RESPFILE'))
+                    );
+
+                    let frw = new FITSReaderWrapper();
+
+                    frw.setFile(respfile.file);
+
+                    let hdus_index = frw.getTabularHDUs();
+
+                    let has_e_min_max = false;
+                    hdus_index.forEach((hdu_index) => {
+                        let columns_name = frw.getColumnsNameFromHDU(hdu_index);
+                        console.log("COLUMNS NAME");
+                        console.log(hdu_index);
+                        console.log(columns_name);
+                        if(columns_name.includes("E_MIN") && columns_name.includes("E_MAX")) {
+                            console.log("E_MIN_MAX");
+                            has_e_min_max = true;
+                            let e_min_max_hdus_index = hdu_index;
+
+                            let column = {
+                                name: 'E_HALF_WIDTH',
+                                hdu_index: hdu_index,
+                                is_from_header: false,
+                                is_processed: true,
+                                from_file: respfile.id
+                            }
+
+                            columns.push(column);
+
+                            column = {
+                                name: 'E_MID',
+                                hdu_index: hdu_index,
+                                is_from_header: false,
+                                is_processed: true,
+                                from_file: respfile.id
+                            }
+
+                            columns.push(column);
+
+                            column = {
+                                name: 'E_MID_LOG',
+                                hdu_index: hdu_index,
+                                is_from_header: false,
+                                is_processed: true,
+                                from_file: respfile.id
+                            }
+
+                            columns.push(column);
+
+                        }
+                    })
+
                 }
 
             }
