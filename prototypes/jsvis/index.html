@@ -181,6 +181,14 @@
             margin-bottom: 10px;
         }
 
+        .axis-range-div {
+            margin-bottom: 10px;
+        }
+
+        #add-y-range {
+            margin-top: 10px;
+        }
+
         .select-hdus {
             margin-bottom: 5px;
         }
@@ -425,6 +433,15 @@
                                         <option value="log" selected>Log</option>
                                     </select>
 
+                                    <label for="has-x-range-checkbox">Add X Range:</label>
+                                    <input type="checkbox" id="has-x-range-checkbox" class="form-checkbox" name="add-x-range">
+                                    <div id="x-range-fields" class="axis-range-div" style="">
+                                        <label for="x-lower-bound">X Lower Bound:</label>
+                                        <input type="number" id="x-lower-bound" class="form-input" name="x-lower-bound">
+                                        <label for="x-higher-bound">X Higher Bound:</label>
+                                        <input type="number" id="x-higher-bound" class="form-input" name="x-higher-bound">
+                                    </div>
+
                                     <input type="radio" id="standard-radio-y" class="radio-calculation" name="calculation-type-y" value="standard">
                                     <label for="standard-radio-y">Standard</label>
 
@@ -438,6 +455,16 @@
                                         <option value="linear" selected>Linear</option>
                                         <option value="log" selected>Log</option>
                                     </select>
+
+                                    <label for="has-y-range-checkbox">Add Y Range:</label>
+                                    <input type="checkbox" id="has-y-range-checkbox" class="form-checkbox" name="add-y-range">
+                                    <div id="y-range-fields" class="axis-range-div" style="">
+                                        <label for="y-lower-bound">Y Lower Bound:</label>
+                                        <input type="number" id="y-lower-bound" class="form-input" name="y-lower-bound">
+                                        <label for="y-higher-bound">Y Higher Bound:</label>
+                                        <input type="number" id="y-higher-bound" class="form-input" name="y-higher-bound">
+                                    </div>
+
                                 </div>
                             </div>
                             <!-- ERROR BARS SETTINGS -->

@@ -105,6 +105,14 @@ class VisualizationSettings {
         }
     }
 
+    setRangesSettings(ranges) {
+        this.settings_ranges = ranges;
+    }
+
+    getRangesSettings() {
+        return this.settings_ranges;
+    }
+
     getAdditionalDatasetsSettings() {
 
     }

@@ -76,17 +76,13 @@ class D3Wrapper {
             let hdu = this.settings_object.getHDUsSettings();
             let axis = this.settings_object.getAxisSettings();
 
-            console.log(axis);
-
             dataset_settings.data_type = data_type;
 
             let axis_settings = [];
             for(let axis_column in axis) {
-                console.log(axis_column);
                 let axis_column_object = this._getColumnSettings(axis[axis_column]);
                 axis_column_object = {...axis_column_object, ...{axis: axis_column}}
 
-                console.log(axis_column_object);
                 axis_settings.push(axis_column_object);
             }
 
@@ -98,7 +94,6 @@ class D3Wrapper {
             let error_bars = this.settings_object.getErrorBarsSettings();
 
             console.log('ERROR BAR CHECK');
-            console.log(error_bars);
 
             if(error_bars !== null) {
                 has_error_bars = true;
@@ -107,13 +102,10 @@ class D3Wrapper {
 
                 let error_bars_settings = [];
                 for(let axis_column in error_bars) {
-                    console.log(axis_column);
                     let axis_column_object = this._getColumnSettings(error_bars[axis_column]);
                     axis_column_object = {...axis_column_object, ...{axis: axis_column}}
 
-                    console.log(axis_column_object);
                     error_bars_settings.push(axis_column_object);
-                    console.log(error_bars_settings);
                 }
 
                 dataset_settings.error_bars = error_bars_settings;
@@ -123,12 +115,7 @@ class D3Wrapper {
 
             let processed_data = dpp.getProcessedDataset(dataset_settings);
 
-            console.log(processed_data);
-
             let processed_json_data = dpp.datasetToJSONData(processed_data);
-
-            console.log(processed_json_data);
-
 
             //let data = this.getProcessedData(data_type.type, hdu['hdu_index'], axis, error_bars);
             //let data = this.getProcessedData(data_type.type, 1, axis, error_bars);
@@ -148,6 +135,24 @@ class D3Wrapper {
                 error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars)
             }
 
+            let ranges = this.settings_object.getRangesSettings();
+            let has_custom_range = false;
+            let custom_range_data = null;
+
+            if(ranges != null) {
+                has_custom_range = true;
+
+                if(has_error_bars) {
+                    custom_range_data = dpp.processDataForRange(ranges, processed_json_data, error_bars);
+                    processed_json_data = custom_range_data.data;
+                    error_bars = custom_range_data.error_bars;
+                } else {
+                    custom_range_data = dpp.processDataForRange(ranges, processed_json_data);
+                    processed_json_data = custom_range_data.data;
+                }
+
+            }
+
             //console.log(data.main);
             console.log("GRAPH DATA");
             console.log(error_bars);
@@ -155,6 +160,9 @@ class D3Wrapper {
             console.log(processed_json_data);
             console.log(axis);
             console.log(scales);
+
+            console.log("CUSTOM RANGE");
+            console.log(custom_range_data);
 
             //visualization.initializeSettings(data.main, axis, scales, error_bars, false, null);
             visualization.initializeSettings(processed_json_data, axis, scales, error_bars, false, null);
