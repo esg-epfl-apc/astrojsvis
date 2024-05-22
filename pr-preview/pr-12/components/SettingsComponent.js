@@ -168,11 +168,7 @@ class SettingsComponent extends HTMLElement {
         let current_file_list = FileRegistry.getCurrentFilesList();
         let columns = [];
 
-        console.log(current_file_list);
-
         current_file_list.forEach((file) => {
-
-            console.log(file);
 
             if(file.type === 'fits') {
                 let fits_reader_wrapper = WrapperContainer.getFITSReaderWrapper();
@@ -189,8 +185,6 @@ class SettingsComponent extends HTMLElement {
 
             }
         })
-
-        console.log(columns);
 
         let columns_by_file = columns.reduce((acc, column) => {
             if (!acc[column.file_id]) {
@@ -461,8 +455,7 @@ class SettingsComponent extends HTMLElement {
         let radio_buttons = document.querySelectorAll('.' + SettingsComponent.calculation_radio_class);
         radio_buttons.forEach(radio_button => {
             radio_button.addEventListener('change', event => {
-                console.log(event.target);
-                console.log(event.target.value);
+
             });
         });
     }
@@ -488,9 +481,6 @@ class SettingsComponent extends HTMLElement {
     updateSettings(configuration) {
         for (let [setting, values] of Object.entries(configuration)) {
 
-            console.log(setting);
-            console.log(values);
-
             let setting_element = document.getElementById(setting);
             if (setting_element) {
 
@@ -508,26 +498,21 @@ class SettingsComponent extends HTMLElement {
     updateSettingsObject() {
         let values = this._extractFormValues();
 
+        console.log("VALUES");
         console.log(values);
 
         let library = {};
         library.library = values['select-library'].value;
         this.settings_object.setLibrarySettings(library);
 
-        console.log(library)
-
         let hdu = {};
         hdu['hdu_index'] = values['select-hdus'].value;
         this.settings_object.setHDUsSettings(hdu);
-
-        console.log(hdu);
 
         let data_type = {};
 
         data_type.type = values['select-data-type'].value;
         this.settings_object.setDataTypeSettings(data_type);
-
-        console.log(data_type)
 
         if(values['select-axis-x'] && values['select-axis-y']) {
             let axis = {};
@@ -536,12 +521,8 @@ class SettingsComponent extends HTMLElement {
             axis.x = values['select-axis-x'].value;
             axis.y = values['select-axis-y'].value;
 
-            console.log(axis)
-
             scales.x = values['select-axis-x-scale'].value;
             scales.y = values['select-axis-y-scale'].value;
-
-            console.log(scales);
 
             this.settings_object.setAxisSettings(axis);
             this.settings_object.setScalesSettings(scales);
@@ -554,10 +535,38 @@ class SettingsComponent extends HTMLElement {
                 error_bars.x = values['select-axis-x-error-bar'].value;
                 error_bars.y = values['select-axis-y-error-bar'].value;
 
-                console.log(error_bars);
-
                 this.settings_object.setErrorBarsSettings(error_bars);
             }
+        }
+
+        if(values['has-x-range-checkbox'].checked === true || values['has-y-range-checkbox'] === true) {
+
+            console.log("RANGES");
+
+            let ranges = {
+                x: {},
+                y: {}
+            };
+
+            if(values['has-x-range-checkbox']) {
+                ranges['x'].lower_bound = values['x-lower-bound'].value;
+                ranges['x'].higher_bound = values['x-higher-bound'].value;
+            } else {
+                ranges['x'] = null;
+            }
+
+            if(values['has-y-range-checkbox']) {
+                ranges['y'].lower_bound = values['y-lower-bound'].value;
+                ranges['y'].higher_bound = values['y-higher-bound'].value;
+            } else {
+                ranges['y'] = null;
+            }
+
+            console.log(ranges);
+
+            this.settings_object.setRangesSettings(ranges);
+        } else {
+            this.settings_object.setRangesSettings(null);
         }
 
         console.log(this.settings_object);
@@ -593,8 +602,18 @@ class SettingsComponent extends HTMLElement {
             console.log(id);
             console.log(checked);
 
-            form_values[id] = { classes, checked };
+            form_values[id] = {classes, checked};
         });
+
+        let inputs = this.container.querySelectorAll('.form-input');
+
+        inputs.forEach(input => {
+            let id = input.id;
+            let classes = input.className.split(' ');
+            let value = input.value;
+
+            form_values[id] = {classes, value};
+        })
 
         return form_values;
     }

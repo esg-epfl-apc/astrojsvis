@@ -58,13 +58,18 @@ class BokehGraph {
         this.container = document.getElementById(this.container_id);
     }
 
-    initializeSettings(data, labels, scales, title, error_bars = null) {
+    initializeSettings(data, labels, scales, title, error_bars = null, custom_range = null) {
         this.setupSource(data);
 
         if(error_bars) {
             this.setupPlot(title, data['y_low'], data['y_up']);
         } else {
-            this.setupPlot(title, data['y'], data['y']);
+            if(custom_range) {
+                this.setupPlot(title, null, null, custom_range.x, custom_range.y)
+            } else {
+                this.setupPlot(title, data['y'], data['y']);
+            }
+
         }
 
         this.setupData();
@@ -85,7 +90,7 @@ class BokehGraph {
         }
     }
 
-    setupPlot(title, y_range_low, y_range_up) {
+    setupPlot(title, y_range_low, y_range_up,x_range = null, y_range= null) {
         this.plot = BokehGraph.plt.figure({
             title: title,
             tools: this.tool_string,
