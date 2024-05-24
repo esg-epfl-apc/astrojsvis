@@ -65,7 +65,35 @@ class BokehGraph {
             this.setupPlot(title, data['y_low'], data['y_up']);
         } else {
             if(custom_range) {
-                this.setupPlot(title, null, null, custom_range.x, custom_range.y)
+                let x_low = [];
+                let x_up = [];
+
+                let y_low = [];
+                let y_up = [];
+
+                if(custom_range.x !== null) {
+                    custom_range.x.lower_bound !== null ? x_low.push(custom_range.x.lower_bound) : x_low = data['x'];
+                    custom_range.x.upper_bound !== null ? x_up.push(custom_range.x.upper_bound) : x_up = data['x'];
+                } else {
+                    x_low = data['x'];
+                    x_up = data['x'];
+                }
+
+                if(custom_range.y !== null) {
+                    custom_range.y.lower_bound !== null ? y_low.push(custom_range.y.lower_bound) : y_low = data['y'];
+                    custom_range.y.upper_bound !== null ? y_up.push(custom_range.y.upper_bound) : y_up = data['y'];
+                } else {
+                    y_low = data['y'];
+                    y_up = data['y'];
+                }
+
+                console.log("BOKEH custom ranges");
+                console.log(y_low);
+                console.log(y_up);
+                console.log(x_low);
+                console.log(x_up);
+
+                this.setupPlot(title, y_low, y_up, x_low, x_up)
             } else {
                 this.setupPlot(title, data['y'], data['y']);
             }
@@ -90,18 +118,28 @@ class BokehGraph {
         }
     }
 
-    setupPlot(title, y_range_low, y_range_up,x_range = null, y_range= null) {
-        this.plot = BokehGraph.plt.figure({
-            title: title,
-            tools: this.tool_string,
-            width: 800,
-            height: 600,
-            y_range: [Math.min(...y_range_low), Math.max(...y_range_up)],
-        });
+    setupPlot(title, y_range_low, y_range_up, x_range_low = null, x_range_up= null) {
+
+        if(x_range_low) {
+            this.plot = BokehGraph.plt.figure({
+                title: title,
+                tools: BokehGraph.default_tool_string,
+                width: 800,
+                height: 600,
+            });
+        } else {
+            this.plot = BokehGraph.plt.figure({
+                title: title,
+                tools: BokehGraph.default_tool_string,
+                width: 800,
+                height: 600,
+            });
+        }
     }
 
     setupSource(data_sources) {
 
+        console.log("BOKEH GRAPH OBJECT data sources");
         console.log(data_sources);
         let data = { x: data_sources.x, y: data_sources.y, y_low: data_sources.y_low, y_up: data_sources.y_up, x_low: data_sources.x_low, x_up: data_sources.x_up }
         console.log(data);

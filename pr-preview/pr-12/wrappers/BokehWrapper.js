@@ -149,15 +149,49 @@ class BokehWrapper {
                 data.dx = processed_data.error_bars[0].data.map(value => isNaN(value) ? 0 : value);
                 data.dy = processed_data.error_bars[1].data.map(value => isNaN(value) ? 0 : value);
 
-                this._processErrorBarData(data);
+                data = this._processErrorBarData(data);
+
+                has_error_bars = true;
             }
 
+            console.log("BOKEH GRAPH DATA")
             console.log(error_bars);
+            console.log(data);
+
+            let ranges = this.settings_object.getRangesSettings();
+            let has_custom_range = false;
+            let custom_range_data = null;
+
+            console.log("RANGES");
+            console.log(ranges);
+
+            if(ranges != null) {
+
+                console.log("RANGES");
+                console.log(ranges);
+
+
+                has_custom_range = true;
+
+                if(has_error_bars) {
+                    custom_range_data = dpp.processDataForRangeBokeh(ranges, data, true);
+                    processed_json_data = custom_range_data.data;
+                } else {
+                    custom_range_data = dpp.processDataForRangeBokeh(ranges, data);
+                    processed_json_data = custom_range_data.data;
+                }
+
+                data = custom_range_data;
+
+                console.log(custom_range_data);
+            }
+
+            console.log("BOKEH FULL DATA");
             console.log(data);
 
             let visualization = VisualizationContainer.getBokehVisualization();
 
-            visualization.initializeSettings(data, labels, scales, BokehWrapper.title['data_type'], error_bars);
+            visualization.initializeSettings(data, labels, scales, BokehWrapper.title['data_type'], error_bars, ranges);
 
             visualization.initializeGraph();
         }

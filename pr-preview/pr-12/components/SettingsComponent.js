@@ -539,25 +539,25 @@ class SettingsComponent extends HTMLElement {
             }
         }
 
-        if(values['has-x-range-checkbox'].checked === true || values['has-y-range-checkbox'] === true) {
+        if(values['has-x-range-checkbox'].checked === true || values['has-y-range-checkbox'].checked === true) {
 
-            console.log("RANGES");
+            console.log("RANGES SETTINGS");
 
             let ranges = {
                 x: {},
                 y: {}
             };
 
-            if(values['has-x-range-checkbox']) {
+            if(values['has-x-range-checkbox'].checked === true) {
                 ranges['x'].lower_bound = values['x-lower-bound'].value;
-                ranges['x'].higher_bound = values['x-higher-bound'].value;
+                ranges['x'].upper_bound = values['x-higher-bound'].value;
             } else {
                 ranges['x'] = null;
             }
 
-            if(values['has-y-range-checkbox']) {
+            if(values['has-y-range-checkbox'].checked === true) {
                 ranges['y'].lower_bound = values['y-lower-bound'].value;
-                ranges['y'].higher_bound = values['y-higher-bound'].value;
+                ranges['y'].upper_bound = values['y-higher-bound'].value;
             } else {
                 ranges['y'] = null;
             }
