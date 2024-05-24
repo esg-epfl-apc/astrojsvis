@@ -7,8 +7,6 @@ class DataPreProcessor {
     getProcessedDataset(dataset_settings_object) {
         let dataset = {};
 
-        console.log(dataset_settings_object);
-
         dataset_settings_object.axis.forEach((axis) => {
 
             let file_object = FileRegistry.getFileById(axis.file_id);
@@ -18,12 +16,8 @@ class DataPreProcessor {
 
             let column_data;
 
-            console.log("PREPROCESSING");
-
             if(dataset_settings_object.data_type.type === 'spectrum' &&
                 SpectrumProcessor.processed_columns_name.includes(axis.column_name)) {
-
-                console.log("SPECTRUM");
 
                 column_data = this.getSpectrumProcessedColumn(axis.hdu_index, axis.column_name, frw)
             } else {
@@ -46,8 +40,6 @@ class DataPreProcessor {
 
                 if(dataset_settings_object.data_type.type === 'spectrum' &&
                     SpectrumProcessor.processed_columns_name.includes(error_bar.column_name)) {
-
-                    console.log("SPECTRUM");
 
                     column_data = this.getSpectrumProcessedColumn(error_bar.hdu_index, error_bar.column_name, frw)
                 } else {
@@ -75,7 +67,6 @@ class DataPreProcessor {
                 if (!rows[index]) {
                     rows[index] = {};
                 }
-                //if(isNaN(parseInt(value))) { value = 0; }
                 rows[index][axis.column_name] = value;
             });
 
@@ -100,8 +91,6 @@ class DataPreProcessor {
 
     processErrorBarDataJSON(dataset, axis, error_bars) {
 
-        console.log("ERROR BAR PROCESSING")
-
         let error_bar_x_values = [];
         let error_bar_y_values = [];
 
@@ -110,15 +99,6 @@ class DataPreProcessor {
 
         let error_bar_x_column = error_bars.x;
         let error_bar_y_column = error_bars.y;
-
-        console.log(axis_x);
-        console.log(axis_y);
-
-        console.log(error_bars.x);
-        console.log(error_bars.y);
-
-        console.log(error_bar_x_column);
-        console.log(error_bar_y_column);
 
         dataset.forEach(function(datapoint){
             let error_bar_x = [
@@ -173,7 +153,6 @@ class DataPreProcessor {
         let processed_data = [];
 
         data.forEach((data_point, i) => {
-            let is_added = false;
             let keys = Object.keys(data_point);
             let x_column = keys[0];
             let y_column = keys[1];
@@ -193,13 +172,6 @@ class DataPreProcessor {
             } else {
                 data_point.match_range_y = false;
             }
-
-            /*
-            console.log(y_column);
-            console.log(ranges.y.lower_bound);
-            console.log(ranges.y.upper_bound);
-            console.log(data_point);
-            */
 
             if(data_point.match_range_x + data_point.match_range_y == 2) {
                 temp_processed_data.push(data_point);

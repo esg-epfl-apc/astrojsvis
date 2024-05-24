@@ -82,11 +82,6 @@ class D3Graph {
                        has_line = false,
                        additional_plots = null) {
 
-        console.log(data);
-
-        console.log(axis);
-        console.log(scales);
-
         let is_set = false;
 
         try {

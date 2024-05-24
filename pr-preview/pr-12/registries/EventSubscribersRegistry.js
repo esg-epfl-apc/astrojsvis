@@ -4,8 +4,8 @@ class EventSubscribersRegistry {
         'fits-loaded': ['settings-component', 'file-component'],
         'configuration': ['settings-component'],
         'file-loaded': ['file-component'],
-        'file-selected': ['header-component', 'data-component', 'settings-component'],
-        'file-registry-change': ['header-component', 'data-component', 'settings-component', 'file-component']
+        'file-selected': ['settings-component'],
+        'file-registry-change': ['settings-component', 'file-component']
     }
 
     constructor() {
