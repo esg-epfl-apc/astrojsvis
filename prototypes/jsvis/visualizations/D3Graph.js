@@ -47,7 +47,7 @@ class D3Graph {
         "y": 'linear'
     }
 
-    static default_axis_tick_format = ".1f";
+    static default_axis_tick_format = ".2f";
 
     constructor(container_id = 'visualization-container', dataset = null) {
         this.container_id = container_id;
@@ -419,8 +419,8 @@ class D3Graph {
         let rescaled_x = e.transform.rescaleX(this.x_scale);
         let rescaled_y = e.transform.rescaleY(this.y_scale);
 
-        this.x_axis.call(d3.axisBottom(rescaled_x));
-        this.y_axis.call(d3.axisLeft(rescaled_y));
+        this.x_axis.call(d3.axisBottom(rescaled_x).tickFormat(d3.format(D3Graph.default_axis_tick_format)))
+        this.y_axis.call(d3.axisLeft(rescaled_y).tickFormat(d3.format(D3Graph.default_axis_tick_format)))
 
         this.svg.selectAll(".tick-line").remove();
         this.svg.selectAll("#y-label").remove();
