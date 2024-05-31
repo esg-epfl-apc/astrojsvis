@@ -1,8 +1,5 @@
 class FileComponent extends HTMLElement {
 
-    container_id;
-    container
-
     static component_id = "file_component";
     static select_file = "select-file";
     static input_file_url = "file-input-url";
@@ -18,6 +15,9 @@ class FileComponent extends HTMLElement {
     static save_button_id = 'save-file-settings';
     static add_button_id = 'add-to-plot'
     static remove_button_id = 'remove-from-plot'
+
+    container_id;
+    container;
 
     fits_reader_wrapper = null;
 
@@ -50,53 +50,8 @@ class FileComponent extends HTMLElement {
     }
 
     _setupInnerElementsListeners() {
-        this._setSelectListener();
-        this._setLoadFileURLButtonListener();
         this._setLoadLocalFileButtonListener();
         this._setFilesListsListeners();
-        //this._setFileSettingsButtonsListeners();
-    }
-
-    _setSelectListener() {
-        const select_element = document.getElementById(FileComponent.select_file);
-
-        select_element.addEventListener('change-file', (event) => {
-            event.preventDefault();
-            const custom_change_event = new CustomEvent('select-change', {
-                bubbles: false,
-                compose: false,
-                cancelable: true,
-                detail: {
-                    file: select_element.value
-                }
-            });
-
-            this.dispatchEvent(custom_change_event);
-        });
-
-    }
-
-    _setLoadFileURLButtonListener() {
-        const button_element = document.getElementById(FileComponent.load_button);
-        const input_element = document.getElementById(FileComponent.input_file_url);
-
-        console.log('load button');
-        console.log(input_element.value);
-
-        button_element.addEventListener('click', (event) => {
-            event.preventDefault();
-            const custom_change_event = new CustomEvent('load-file', {
-                bubbles: false,
-                compose: false,
-                cancelable: true,
-                detail: {
-                    file_url: input_element.value
-                }
-            });
-
-            this.dispatchEvent(custom_change_event);
-        });
-
     }
 
     _setLoadLocalFileButtonListener() {
@@ -105,17 +60,8 @@ class FileComponent extends HTMLElement {
 
         let file_type = type_input.value;
 
-        console.log("file");
-        console.log(file_type);
-
         file_input.addEventListener('change', function(event) {
             let file = event.target.files[0];
-
-            console.log("FILE INFO");
-            console.log(file);
-
-            console.log(type_input);
-            console.log(file_type);
 
             if(file_type === 'fits') {
                 file.arrayBuffer().then(arrayBuffer => {
@@ -132,7 +78,6 @@ class FileComponent extends HTMLElement {
                 let reader = new FileReader();
                 reader.onload = function(event) {
                     let csv_file = event.target.result;
-                    console.log(csv_file);
                 };
             }
 
@@ -149,15 +94,8 @@ class FileComponent extends HTMLElement {
 
         let buttons = Array.from(buttons_available).concat(Array.from(buttons_current));
 
-        console.log("BUTTONS");
-        console.log(buttons);
-        console.log(buttons_available);
-        console.log(buttons_current);
-
         buttons.forEach(button => {
             button.addEventListener("click", () => {
-                console.log(button);
-                console.log(button.textContent);
 
                 button.classList.toggle("active");
 
@@ -167,9 +105,6 @@ class FileComponent extends HTMLElement {
                     this.clearFileSettingsPanel();
                 } else {
                     button.setAttribute("aria-current", "true");
-
-                    console.log("Listener file id");
-                    console.log(button.getAttribute("data-id"));
 
                     let file = FileRegistry.getFileById(button.getAttribute("data-id"));
                     this.setFileSettingsPanel(file);
@@ -207,41 +142,26 @@ class FileComponent extends HTMLElement {
             this.updateCurrentFilesList();
             this.updateAvailableFilesList();
 
-            console.log(FileRegistry.current_files);
-
             let frce = new FileRegistryChangeEvent();
             frce.dispatchToSubscribers();
         });
     }
 
     handleFITSLoadedEvent(event) {
-        console.log(event);
-        console.log(event.detail['fits_reader_wrapper']);
-
         this.fits_reader_wrapper = event.detail['fits_reader_wrapper'];
-
         let file_path = this.fits_reader_wrapper.getFilePath();
 
         this._addFileToSelect(file_path);
     }
 
     handleFileLoadedEvent(event) {
-        console.log("File loaded");
-        console.log(event);
-
-        console.log(event.detail);
-
         FileRegistry.addToAvailableFiles(event.detail);
-        console.log(FileRegistry.getAvailableFilesList());
 
         this.updateAvailableFilesList();
-
         this._setFilesListsListeners();
     }
 
     handleFileRegistryChangeEvent(event) {
-        console.log("FILE LOADED");
-
         this.updateAvailableFilesList();
         this.updateCurrentFilesList();
 
@@ -263,13 +183,10 @@ class FileComponent extends HTMLElement {
         available_files_list_element.innerHTML = '';
 
         let file_elements = this._createFileSelection('available');
-        console.log(file_elements);
 
         file_elements.forEach((file_element) => {
             available_files_list_element.appendChild(file_element);
         })
-
-        //this._setFilesListsListeners();
     }
 
     updateCurrentFilesList() {
@@ -283,8 +200,6 @@ class FileComponent extends HTMLElement {
         file_elements.forEach((file_element) => {
             current_files_list_element.appendChild(file_element);
         })
-
-        //this._setFilesListsListeners();
     }
 
     clearFileSettingsPanel() {
@@ -310,50 +225,16 @@ class FileComponent extends HTMLElement {
             file_settings_component.setupComponent();
         }
 
-        /*
-        let save_button = document.getElementById(FileComponent.save_button_id);
-        let add_button = document.getElementById(FileComponent.add_button_id);
-        let remove_button = document.getElementById(FileComponent.remove_button_id);
-
-        let select_hdu = document.getElementById('select-hdu-file');
-        select_hdu.innerHTML = '';
-
-        save_button.setAttribute("data-id", file.id);
-        add_button.setAttribute("data-id", file.id);
-        remove_button.setAttribute("data-id", file.id);
-
-        let frw = WrapperContainer.getFITSReaderWrapper();
-        frw.setFile(file.file);
-
-        let hdus = frw.getHDUs();
-        console.log(hdus);
-
-        let options = [];
-        hdus.forEach((hdu) => {
-            let option = document.createElement("option");
-
-            option.value = hdu.index;
-            option.text = hdu.name + ' ' + hdu.extname;
-
-            options.push(option);
-        })
-
-        options.forEach((option) => {
-            select_hdu.add(option);
-        })
-        */
     }
 
     _addFileToSelect(file) {
         let file_option = this._createSelectOption(file);
-
         let select = document.getElementById(FileComponent.select_file);
 
         select.add(file_option);
     }
 
     _createFileSelection(list = 'available') {
-
         let files;
 
         if(list === 'available') {
@@ -362,15 +243,10 @@ class FileComponent extends HTMLElement {
             files = FileRegistry.getCurrentFilesList();
         }
 
-        console.log(list);
-        console.log(files);
-
         let selection_elements = [];
 
         let file_selection;
         files.forEach((available_file) => {
-            console.log(available_file);
-
             let file_uid = available_file.id+'.'+available_file.file_name;
 
             file_selection = document.createElement("button");

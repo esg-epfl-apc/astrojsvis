@@ -59,10 +59,6 @@ class LightCurveProcessor {
     }
 
     _setHDU() {
-
-        console.log(this.hdu_index);
-        console.log(this.fits_reader_wrapper.file);
-
         this.hdu = this.fits_reader_wrapper.getHDU(this.hdu_index);
     }
 
@@ -128,14 +124,6 @@ class LightCurveProcessor {
         return light_curve_data;
     }
 
-    processDataJSON(dataset) {
-
-    }
-
-    processDataCSV() {
-
-    }
-
     _processErrorBarsDataJSON(error_bars, axis, data) {
         let error_bar_x_values = [];
         let error_bar_y_values = [];
@@ -145,8 +133,6 @@ class LightCurveProcessor {
 
         let error_bar_x_column = error_bars.x;
         let error_bar_y_column = error_bars.y;
-
-        console.log(axis_x);
 
         data.forEach(function(datapoint){
             let error_bar_x = [
@@ -281,10 +267,6 @@ class LightCurveProcessor {
         } else {
 
         }
-    }
-
-    getErrorBars() {
-
     }
 
     getDurationInSeconds(time_column) {

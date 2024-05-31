@@ -118,7 +118,7 @@ class FITSSettingsComponent extends HTMLElement {
             '                                        </div>\n' +
             '                                    </div>\n' +
             '\n' +
-            '                                    <button class="btn btn-success" id="save-file-settings">Save changes</button>\n' +
+            '                                    <!-- button class="btn btn-success" id="save-file-settings">Save changes</button -->\n' +
             '                                    <button class="btn btn-primary" id="add-to-plot">Add to plot</button>\n' +
             '                                    <button class="btn btn-danger" id="remove-from-plot">Remove from plot</button>\n' +
             '                                </div>\n' +
@@ -179,8 +179,6 @@ class FITSSettingsComponent extends HTMLElement {
         let add_to_plot_btn = document.getElementById(this.add_to_plot_btn_id);
         let remove_from_plot_btn  = document.getElementById(this.remove_from_plot_btn_id);
 
-        console.log(this.is_current);
-
         if(this.is_current) {
             add_to_plot_btn.style.display = 'none';
             remove_from_plot_btn.style.display = 'initial';
@@ -193,9 +191,6 @@ class FITSSettingsComponent extends HTMLElement {
             FileRegistry.addToCurrentFiles(this.file);
 
             this.is_current = true;
-
-            console.log("ADD")
-            console.log(FileRegistry.getCurrentFilesList());
 
             let frce = new FileRegistryChangeEvent();
             frce.dispatchToSubscribers();
