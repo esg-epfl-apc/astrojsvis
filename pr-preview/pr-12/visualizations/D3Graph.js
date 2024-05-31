@@ -289,7 +289,7 @@ class D3Graph {
             .y(d => this.y_scale(d.bound));
 
         error_bars.x.forEach((error_bar) => {
-            this.svg.append("path")
+            d3.select('#data-plot').append("path")
                 .attr("class", "error-bar-x")
                 .attr("fill", "none")
                 .attr("stroke", "steelblue")
@@ -302,7 +302,7 @@ class D3Graph {
             .y(d => this.y_scale(d[this.y_axis_data_col]));
 
         error_bars.y.forEach((error_bar) => {
-            this.svg.append("path")
+            d3.select('#data-plot').append("path")
                 .attr("class", "error-bar-x")
                 .attr("fill", "none")
                 .attr("stroke", "steelblue")
@@ -393,7 +393,7 @@ class D3Graph {
                 .y(d => rescaled_y(d.bound));
 
             this.error_bars.x.forEach((error_bar) => {
-                this.svg.append("path")
+                d3.select('#data-plot').append("path")
                     .attr("class", "error-bar-x")
                     .attr("fill", "none")
                     .attr("stroke", "steelblue")
@@ -406,7 +406,7 @@ class D3Graph {
                 .y(d => rescaled_y(d[this.y_axis_data_col]));
 
             this.error_bars.y.forEach((error_bar) => {
-                this.svg.append("path")
+                d3.select('#data-plot').append("path")
                     .attr("class", "error-bar-x")
                     .attr("fill", "none")
                     .attr("stroke", "steelblue")
