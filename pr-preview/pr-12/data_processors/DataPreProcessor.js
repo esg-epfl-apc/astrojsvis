@@ -195,11 +195,6 @@ class DataPreProcessor {
     }
 
     processDataForRangeBokeh(ranges, data, has_error_bars = false) {
-        let temp_processed_data = [];
-        let temp_processed_error_bars = {};
-        let temp_error_bar_x = [];
-        let temp_error_bar_y = [];
-
         let processed_data = {};
         processed_data.x = [];
         processed_data.y = []
@@ -211,15 +206,8 @@ class DataPreProcessor {
             processed_data.y_up = [];
         }
 
-        console.log("PROCESSED DATA OBJECT");
-        console.log(processed_data);
-
         let temp_x = [];
         let temp_y = [];
-        let temp_x_low = [];
-        let temp_x_up = [];
-        let temp_y_low = [];
-        let temp_y_up = [];
 
         data.x.forEach((data_point) => {
 
@@ -256,19 +244,11 @@ class DataPreProcessor {
         temp_x.forEach((data_point_x, i) => {
             let data_point_y = temp_y[i];
 
-            console.log(data_point_x);
-            console.log(data_point_y);
-
             if(data_point_x.match_range_x + data_point_y.match_range_y == 2) {
-                console.log("MATCH");
                 processed_data.x.push(data_point_x.value);
                 processed_data.y.push(data_point_y.value);
 
                 if(has_error_bars) {
-                    console.log(data.y_low[i]);
-                    console.log(data.y_up[i]);
-                    console.log(data.x_low[i]);
-                    console.log(data.x_up[i]);
                     processed_data.y_low.push(data.y_low[i]);
                     processed_data.y_up.push(data.y_up[i]);
                     processed_data.x_low.push(data.x_low[i]);
@@ -277,21 +257,7 @@ class DataPreProcessor {
             }
         })
 
-        /*
-        if(error_bars != null) {
-            temp_processed_error_bars.x = temp_error_bar_x;
-            temp_processed_error_bars.y = temp_error_bar_y;
-            processed_data.error_bars = temp_processed_error_bars;
-        }
-        */
-
-        console.log(processed_data);
-
         return processed_data;
-    }
-
-    processNotSupportedValues() {
-        
     }
 
 }

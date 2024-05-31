@@ -7,7 +7,8 @@ class D3Wrapper {
         'd3-settings': {
             display: true,
             'd3-options': {
-                'has_line': true
+                'has_line': true,
+                display: false
             }
         }
     };

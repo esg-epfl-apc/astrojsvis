@@ -14,7 +14,7 @@ class BokehWrapper {
             display: true,
             'bokeh-options': {
                 tools: {
-                    display : false
+                    display: false
                 }
             }
         }
@@ -46,21 +46,13 @@ class BokehWrapper {
     handleSettingsChangedEvent(event) {
         let settings_object = event.detail.settings_object;
 
-        console.log(settings_object);
-
         let library_settings = settings_object.getLibrarySettings();
-
-        console.log(library_settings);
 
         if(library_settings.library === BokehWrapper.library) {
             this.createConfigurationObject();
 
-            console.log(this.configuration_object);
-
             if(this.configuration_object !== null) {
                 let configuration_event = new ConfigurationEvent(this.configuration_object);
-
-                console.log(configuration_event);
 
                 configuration_event.dispatchToSubscribers();
             }
@@ -69,8 +61,6 @@ class BokehWrapper {
 
     handleVisualizationGenerationEvent(event) {
         this.settings_object = event.detail.settings_object;
-
-        console.log(this.settings_object);
 
         let library_settings = this.settings_object.getLibrarySettings();
 
@@ -114,8 +104,6 @@ class BokehWrapper {
 
             let processed_data = dpp.getProcessedDataset(dataset_settings);
 
-            console.log(processed_data);
-
             let processed_json_data = dpp.datasetToJSONData(processed_data);
 
             let data_type = this.settings_object.getDataTypeSettings();
@@ -130,8 +118,6 @@ class BokehWrapper {
             console.log(axis);
             console.log(processed_json_data);
 
-            //let data = this.getProcessedData(data_type.type, hdu['hdu_index'], axis, error_bars);
-
             processed_data.axis[0].data = processed_data.axis[0].data.map(value => isNaN(value) ? 0 : value);
             processed_data.axis[1].data = processed_data.axis[1].data.map(value => isNaN(value) ? 0 : value);
 
@@ -144,8 +130,6 @@ class BokehWrapper {
                 processed_data.error_bars[0].data = processed_data.error_bars[0].data.map(value => !isFinite(value) ? 0 : value);
                 processed_data.error_bars[1].data = processed_data.error_bars[1].data.map(value => !isFinite(value) ? 0 : value);
 
-                //error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars)
-
                 data.dx = processed_data.error_bars[0].data.map(value => isNaN(value) ? 0 : value);
                 data.dy = processed_data.error_bars[1].data.map(value => isNaN(value) ? 0 : value);
 
@@ -154,40 +138,20 @@ class BokehWrapper {
                 has_error_bars = true;
             }
 
-            console.log("BOKEH GRAPH DATA")
-            console.log(error_bars);
-            console.log(data);
-
             let ranges = this.settings_object.getRangesSettings();
             let has_custom_range = false;
             let custom_range_data = null;
 
-            console.log("RANGES");
-            console.log(ranges);
-
             if(ranges != null) {
-
-                console.log("RANGES");
-                console.log(ranges);
-
-
-                has_custom_range = true;
 
                 if(has_error_bars) {
                     custom_range_data = dpp.processDataForRangeBokeh(ranges, data, true);
-                    processed_json_data = custom_range_data.data;
                 } else {
                     custom_range_data = dpp.processDataForRangeBokeh(ranges, data);
-                    processed_json_data = custom_range_data.data;
                 }
 
                 data = custom_range_data;
-
-                console.log(custom_range_data);
             }
-
-            console.log("BOKEH FULL DATA");
-            console.log(data);
 
             let visualization = VisualizationContainer.getBokehVisualization();
 
@@ -212,10 +176,6 @@ class BokehWrapper {
         }
 
         data = data_processor.processDataRawJSON(axis, error_bars);
-
-        console.log("Data bokeh");
-        console.log(error_bars);
-        console.log(data);
 
         if(error_bars) {
             data = this._processErrorBarData(data);
@@ -243,12 +203,6 @@ class BokehWrapper {
     _processErrorBarData(data) {
 
         let y_low = [], y_up = [], x_low = [], x_up = [];
-
-        console.log("Bokeh wrapper process data");
-        console.log(data.dy);
-        console.log(data.timedel);
-
-        //let timedel = data.timedel[0];
 
         for (let i in data.dy) {
             y_low[i] = data.y[i] - data.dy[i];

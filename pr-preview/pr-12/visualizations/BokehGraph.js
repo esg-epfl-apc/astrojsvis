@@ -87,12 +87,6 @@ class BokehGraph {
                     y_up = data['y'];
                 }
 
-                console.log("BOKEH custom ranges");
-                console.log(y_low);
-                console.log(y_up);
-                console.log(x_low);
-                console.log(x_up);
-
                 this.setupPlot(title, y_low, y_up, x_low, x_up)
             } else {
                 this.setupPlot(title, data['y'], data['y']);
@@ -138,15 +132,8 @@ class BokehGraph {
     }
 
     setupSource(data_sources) {
-
-        console.log("BOKEH GRAPH OBJECT data sources");
-        console.log(data_sources);
-        let data = { x: data_sources.x, y: data_sources.y, y_low: data_sources.y_low, y_up: data_sources.y_up, x_low: data_sources.x_low, x_up: data_sources.x_up }
-        console.log(data);
-
         this.source = new Bokeh.ColumnDataSource({
             data: data_sources
-            //data: { x: data_sources.x, y: data_sources.y, y_low: data_sources.y_low, y_up: data_sources.y_up, x_low: data_sources.x_low, x_up: data_sources.x_up }
         });
     }
 

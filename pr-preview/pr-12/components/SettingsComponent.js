@@ -214,9 +214,7 @@ class SettingsComponent extends HTMLElement {
             }
             i++;
         }
-
-        console.log(select_options);
-
+        
         this._setSelectGroupAxis(select_options);
         this._setSelectGroupErrorBars(select_options);
     }
@@ -498,9 +496,6 @@ class SettingsComponent extends HTMLElement {
     updateSettingsObject() {
         let values = this._extractFormValues();
 
-        console.log("VALUES");
-        console.log(values);
-
         let library = {};
         library.library = values['select-library'].value;
         this.settings_object.setLibrarySettings(library);
@@ -541,8 +536,6 @@ class SettingsComponent extends HTMLElement {
 
         if(values['has-x-range-checkbox'].checked === true || values['has-y-range-checkbox'].checked === true) {
 
-            console.log("RANGES SETTINGS");
-
             let ranges = {
                 x: {},
                 y: {}
@@ -562,14 +555,10 @@ class SettingsComponent extends HTMLElement {
                 ranges['y'] = null;
             }
 
-            console.log(ranges);
-
             this.settings_object.setRangesSettings(ranges);
         } else {
             this.settings_object.setRangesSettings(null);
         }
-
-        console.log(this.settings_object);
 
     }
 
@@ -593,14 +582,9 @@ class SettingsComponent extends HTMLElement {
 
         checkboxes.forEach(checkbox => {
 
-            console.log("Checkbox");
-
             let id = checkbox.id;
             let classes = checkbox.className.split(' ');
             let checked = checkbox.checked;
-
-            console.log(id);
-            console.log(checked);
 
             form_values[id] = {classes, checked};
         });

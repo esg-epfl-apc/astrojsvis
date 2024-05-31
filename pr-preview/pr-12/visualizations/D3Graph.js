@@ -57,22 +57,11 @@ class D3Graph {
 
         this._updateChart = this._updateChart.bind(this);
 
-
         this.initialized = false;
     }
 
     _setContainer() {
         this.container = document.getElementById(this.container_id);
-    }
-
-    setDimensions(margin, width, height) {
-        this.margin = margin;
-        this.width = width;
-        this.height = height;
-    }
-
-    setIds() {
-
     }
 
     initializeSettings(data,
@@ -128,52 +117,6 @@ class D3Graph {
         return is_set;
     }
 
-    _initializeSettings(data,
-                       axis,
-                       scales = D3Graph.default_scales,
-                       error_bars = null,
-                       has_line = false,
-                       additional_plots = null) {
-
-        console.log(data);
-
-        console.log(axis);
-        console.log(scales);
-
-        let is_set = false;
-
-        try {
-
-            this.dataset = data;
-
-            this.x_axis_data_col = axis['x'];
-            this.y_axis_data_col = axis['y'];
-
-            this.x_scale_type = scales['x'];
-            this.y_scale_type = scales['y'];
-
-            if (error_bars) {
-                this.has_error_bars = true;
-                this.error_bars = error_bars;
-
-                this.x_axis_data_col_error_bar = axis['x'].value;
-                this.y_axis_data_col_error_bar = axis['y'].value;
-
-            } else {
-                this.has_error_bars = false;
-            }
-
-            this.has_line = has_line;
-
-            is_set = true;
-
-        } catch(e) {
-            console.log("Error during graph settings process")
-        }
-
-        return is_set;
-    }
-
     initializeGraph() {
         try {
             this._setSVGContainer();
@@ -206,7 +149,6 @@ class D3Graph {
             this.initialized = true;
         } catch(e) {
             console.log("Error during graph initialization");
-            console.log(e);
             this.initialized = false;
         }
 
@@ -405,12 +347,6 @@ class D3Graph {
 
     _updateChart(e) {
 
-        console.log("updateChart");
-
-        console.log(this.x_axis);
-
-        console.log(e);
-
         let rescaled_x = e.transform.rescaleX(this.x_scale);
         let rescaled_y = e.transform.rescaleY(this.y_scale);
 
@@ -435,10 +371,6 @@ class D3Graph {
         this._setXAxisLabel();
         this._setYAxisLabel();
 
-        //let { transform } = e;
-
-        //this.svg.attr("transform", transform);
-
         let x_data_col = this.x_axis_data_col;
         let y_data_col = this.y_axis_data_col;
 
@@ -455,7 +387,6 @@ class D3Graph {
         }
 
         if(this.has_error_bars) {
-            //this._setErrorBars(this.error_bars);
 
             let line_error_bar_x = d3.line()
                 .x(d => rescaled_x(d[this.x_axis_data_col]))

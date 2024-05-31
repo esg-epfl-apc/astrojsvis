@@ -51,8 +51,6 @@
     <script src="components/FileComponent.js"></script>
     <script src="components/VisualizationComponent.js"></script>
     <script src="components/SettingsComponent.js"></script>
-    <script src="components/HeaderComponent.js"></script>
-    <script src="components/DataComponent.js"></script>
     <script src="components/file_type/FITSSettingsComponent.js"></script>
     <script src="components/file_type/CSVSettingsComponent.js"></script>
 
@@ -85,9 +83,20 @@
         }
 
         #column-file {
-            background-color: lightgray;
             padding: 20px;
             box-sizing: border-box;
+        }
+
+        #file-settings-button-container {
+            margin: 20px;
+        }
+
+        #current-files-card {
+            min-height: 100%;
+        }
+
+        #available-files-card {
+            min-height: 100%;
         }
 
         .grid-container {
@@ -111,20 +120,8 @@
             gap: 10px;
         }
 
-        .list-group-item {
-
-        }
-
         .opt-group0 {
             background-color: lightgray;
-        }
-
-        .opt-group0 option {
-
-        }
-
-        .opt-group1 {
-
         }
 
         #column-file select {
@@ -145,28 +142,19 @@
         }
 
         .column-graph {
-            background-color: lightblue;
             padding: 20px;
             box-sizing: border-box;
+        }
+
+        #visualization-component {
+            position: sticky;
+            top: 0;
         }
 
         .column-settings {
-            background-color: lightgreen;
             padding: 20px;
             box-sizing: border-box;
             max-width: 100%;
-        }
-
-        .column-data {
-            background-color: lightgray;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .column-header {
-            background-color: lightyellow;
-            padding: 20px;
-            box-sizing: border-box;
         }
 
         .card {
@@ -177,11 +165,28 @@
             margin: 2px 0 15px 0;
         }
 
+        .form-checkbox {
+            margin-top: 10px;
+        }
+
         #select-axis-x-scale {
             margin-bottom: 10px;
         }
 
+        #select-axis-y-scale {
+            margin-bottom: 10px;
+        }
+
         .axis-range-div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .axis-range-div input {
+            width: 100%;
+        }
+
+        #has-error-bars-checkbox {
             margin-bottom: 10px;
         }
 
@@ -230,6 +235,10 @@
             display: none;
         }
 
+        #button-generate {
+            width: 100%;
+        }
+
         .inner-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(50%, 1fr));
@@ -242,28 +251,20 @@
         <div class="container">
             <div id="column-file">
                 <file-component id="file-component">
-                    <h2>File container</h2>
-
                     <div class="grid-container">
                         <div class="full-width-column" style="grid-column: 1 / span 2;">
                             <div class="card">
                                 <div class="card-header">Download</div>
                                 <div class="card-body">
-                                    <input type="text" id="file-input-url" name="file-input" placeholder="File url">
-                                    <button id="load-file">Load file</button>
                                     <input type="file" id="file-input-local">
                                     <select id="select-file-type">
                                         <option value="fits">FITS</option>
-                                        <option value="csv">CSV</option>
-                                    </select>
-                                    <select id="select-file" class="form-select select-file">
-                                        <option selected>Available files</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                         <div class="left-column">
-                            <div class="card">
+                            <div id="available-files-card" class="card">
                                 <div class="card-header">Available files</div>
                                 <div class="card-body">
                                     <div id="available-files-list" class="list-group">
@@ -273,7 +274,7 @@
                             </div>
                         </div>
                         <div class="right-column">
-                            <div class="card">
+                            <div id="current-files-card" class="card">
                                 <div class="card-header">Current files</div>
                                 <div class="card-body">
                                     <div id="current-files-list" class="list-group">
@@ -281,74 +282,21 @@
                                 </div>
                             </div>
                         </div>
-                        <!--div class="full-width-column" style="grid-column: 1 / span 2;">
-                            <div class="card">
-                                <div class="card-header">File settings</div>
-                                <div class="card-body">
-                                    <select id="select-hdu-file" class="form-select">
-
-                                    </select>
-
-                                    <div class="inner-row">
-                                        <div class="left-column">
-                                            <div class="card">
-                                                <div class="card-header">Header</div>
-                                                <div class="card-body">
-                                                    <div id="header-hdu-file">
-                                                        <table id="table-header-data" class="table table-striped">
-                                                            <thead>
-                                                            <tr>
-                                                                <th scope="col">#</th>
-                                                                <th scope="col">Name</th>
-                                                                <th scope="col">Value</th>
-                                                                <th scope="col">Comment</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody class="table-group-divider">
-
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="right-column">
-                                            <div class="card">
-                                                <div class="card-header">Data</div>
-                                                <div class="card-body">
-                                                    <div id="data-hdu-file">
-
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button class="btn btn-success" id="save-file-settings">Save changes</button>
-                                    <button class="btn btn-primary" id="add-to-plot">Add to plot</button>
-                                    <button class="btn btn-danger" id="remove-from-plot">Remove from plot</button>
-                                </div>
-                            </div>
-                        </div-->
                         <div id="file-settings-container" class="full-width-column">
 
                         </div>
                     </div>
-
-
                 </file-component>
             </div>
         </div>
         <div class="container container-graph-settings">
             <div class="column-graph">
                 <visualization-component id="visualization-component">
-                    <h2>Graph container</h2>
                     <div id="visualization-container"></div>
                 </visualization-component>
             </div>
             <div class="column-settings">
                 <settings-component id="settings-component">
-                    <h2>Settings container</h2>
                     <div id="settings-container" class="card">
                         <div class="card-header">
                             <h5 class="card-title">Settings</h5>
@@ -368,15 +316,11 @@
                             <div id="bokeh-settings" class="card">
                                 <div class="card-body">
                                     <h6 class="card-title">Bokeh Settings</h6>
-                                    <label for="has-datatable-checkbox">Data table : </label>
-                                    <input type="checkbox" id="has-datatable-checkbox" class="form-checkbox" name="has-datatable-checkbox">
                                 </div>
                             </div>
                             <div id="d3-settings" class="card">
                                 <div class="card-body">
                                     <h6 class="card-title">D3 Settings</h6>
-                                    <label for="has-line-checkbox">Line : </label>
-                                    <input type="checkbox" id="has-line-checkbox" class="form-checkbox" name="has-line-checkbox">
                                 </div>
                             </div>
                             <!-- DATA TYPE SETTINGS -->
@@ -394,11 +338,6 @@
                             <div id="light-curve-settings" class="card">
                                 <div class="card-body">
                                     <h6 class="card-title">Light Curve Settings</h6>
-                                    <select id="select-time-format" class="form-select">
-                                        <option selected>Base Time Format</option>
-                                        <option value="mjd" >MJD</option>
-                                        <option value="jd" >JD</option>
-                                    </select>
                                 </div>
                             </div>
                             <div id="spectrum-settings" class="card">
@@ -419,11 +358,6 @@
                             <div id="axis-settings" class="card">
                                 <div id="card-body-axis" class="card-body">
                                     <h6 class="card-title">Axis Settings</h6>
-                                    <input type="radio" id="standard-radio-x" class="radio-calculation" name="calculation-type-x" value="standard">
-                                    <label for="standard-radio-x">Standard</label>
-
-                                    <input type="radio" id="arithmetic-radio-x" class="radio-calculation" name="calculation-type-x" value="arithmetic">
-                                    <label for="arithmetic-radio-x">Arithmetic</label>
 
                                     <select id="select-axis-x" class="form-select select-axis">
                                         <option selected>X axis</option>
@@ -441,12 +375,6 @@
                                         <label for="x-higher-bound">X Upper Bound:</label>
                                         <input type="number" id="x-higher-bound" class="form-input" name="x-higher-bound">
                                     </div>
-
-                                    <input type="radio" id="standard-radio-y" class="radio-calculation" name="calculation-type-y" value="standard">
-                                    <label for="standard-radio-y">Standard</label>
-
-                                    <input type="radio" id="arithmetic-radio-y" class="radio-calculation" name="calculation-type-y" value="arithmetic">
-                                    <label for="arithmetic-radio-y">Arithmetic</label>
 
                                     <select id="select-axis-y" class="form-select select-axis">
                                         <option selected>Y axis</option>
@@ -471,7 +399,7 @@
                             <div id="error-bars-settings" class="card">
                                 <div id="card-body-error-bars" class="card-body">
                                     <h6 class="card-title">Error Bars</h6>
-                                    <label for="has-error-bars-checkbox">Add error bars : </label>
+                                    <label for="has-error-bars-checkbox">Add Error Bars: </label>
                                     <input type="checkbox" id="has-error-bars-checkbox" class="form-checkbox" name="has-error-bars-checkbox">
                                     <select id="select-axis-x-error-bar" class="form-select select-axis-error-bars">
                                         <option value="none" selected>X axis error bars</option>
@@ -495,7 +423,6 @@
                             </div>
 
                             <button id="button-generate" class="btn btn-primary">Generate</button>
-                            <button id="button-reset" class="btn btn-secondary">Reset</button>
                         </div>
                     </div>
                 </settings-component>
