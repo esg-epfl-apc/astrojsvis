@@ -135,7 +135,9 @@ function initializeHDUSettings(fits_file) {
     })
 
     console.log(HDUs);
+
     setupHDUControls(HDUs);
+    setupDataContainerControls(HDUs);
 }
 
 function initializeDatasetSettings(columns) {
@@ -323,6 +325,22 @@ function resetSettingsOptions() {
     });
 }
 
+function setupDataContainerControls(HDUs) {
+    let options_hdu = getHDUsOptionsFromData(HDUs, 'Primary');
+
+    let select_hdu = document.getElementById("select-data-hdus");
+
+    options_hdu.forEach(function(option) {
+        select_hdu.add(option);
+    });
+
+    select_hdu = document.getElementById("select-header-hdus");
+
+    options_hdu.forEach(function(option) {
+        select_hdu.add(option.cloneNode(true));
+    });
+}
+
 function setDataContainer(data) {
     console.log(data);
 
@@ -354,11 +372,36 @@ function setDataContainer(data) {
 }
 
 function setHeaderContainer(hdu) {
+    console.log("HDU header table data");
     console.log(hdu);
 
-    const cards_array = Object.values(hdu.header.cards).filter(item => typeof item === 'object' && !Array.isArray(item));
+    /*
+    const cards_array = Object.values(hdu.header.cards)
+        .filter(([key, item]) => typeof item === 'object' && !Array.isArray(item));
+    */
+
+    const cards_array = [];
+
+    Object.entries(hdu.header.cards).forEach(function(item) {
+        console.log(item);
+        let item_value_array = item[1];
+
+
+        if(typeof item_value_array === 'object' && !Array.isArray(item_value_array)) {
+            item_value_array['card_name'] = item[0];
+            cards_array.push(item_value_array);
+        }
+    })
+
+    console.log("Cards");
+    console.log(cards_array);
+
+    const cards_array_key = Object.keys(hdu.header.cards);
+    console.log("Cards key");
+    console.log(cards_array_key);
 
     let sorted_hdu_cards = cards_array.sort((a, b) => a.index - b.index);
+    console.log("Sorted cards");
     console.log(sorted_hdu_cards);
 
     const table_element = document.getElementById('table-header-data');
@@ -368,14 +411,18 @@ function setHeaderContainer(hdu) {
 
     sorted_hdu_cards.forEach(card => {
 
+        console.log(card);
+
         const row = tbody.insertRow();
 
 
         const index_cell = row.insertCell(0);
-        const name_cell = row.insertCell(1);
-        const description_cell = row.insertCell(2);
+        const card_cell = row.insertCell(1);
+        const name_cell = row.insertCell(2);
+        const description_cell = row.insertCell(3);
 
         index_cell.textContent = card.index;
+        card_cell.textContent = card.card_name;
         name_cell.textContent = card.value;
         description_cell.textContent = card.comment;
     });

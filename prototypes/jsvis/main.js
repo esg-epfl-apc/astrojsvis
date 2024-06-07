@@ -1,118 +1,33 @@
-let fits_data_json;
-let fits_data_file
-let fits_data_columns;
+import { FITSReaderWrapper } from './wrappers/FITSReaderWrapper.js'
+import { BokehWrapper } from './wrappers/BokehWrapper.js'
+import { D3Wrapper } from './wrappers/D3Wrapper.js'
+import { WrapperContainer } from './containers/WrapperContainer.js'
+import { VisualizationContainer } from './containers/VisualizationContainer.js'
+import { FileComponent } from './components/FileComponent.js'
+import { SettingsComponent } from './components/SettingsComponent.js'
+import { VisualizationComponent } from './components/VisualizationComponent.js'
+import { FITSSettingsComponent } from './components/file_type/FITSSettingsComponent.js'
+import { CSVSettingsComponent } from './components/file_type/CSVSettingsComponent.js'
+import { D3Graph } from "./visualizations/D3Graph";
+import { BokehGraph } from "./visualizations/BokehGraph";
 
-function getFile(file_path) {
+let file_path = window.location.href + "_test_files/spiacs_lc_query.fits";
 
-    return fetch(file_path)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error, status = ${response.status}`);
-            }
-            return response.arrayBuffer();
-        })
-        .then((buffer) => readFile(buffer, file_path));
-}
+let fits_reader_wrapper = new FITSReaderWrapper(file_path);
 
-function readFile(arrayBuffer, file_path) {
-    let fits_file = window.FITSReader.parseFITS(arrayBuffer);
-    console.log(fits_file);
+let bokeh_wrapper = new BokehWrapper();
 
-    let hdu = fits_file.getHDU();
-    console.log(hdu);
+let d3_wrapper = new D3Wrapper();
 
-    let header = hdu.header;
-    let data = hdu.data;
+WrapperContainer.setFITSReaderWrapper(fits_reader_wrapper);
+WrapperContainer.setBokehWrapper(bokeh_wrapper);
+WrapperContainer.setD3Wrapper(d3_wrapper);
 
-    initializeFromFITS(fits_file);
+VisualizationContainer.setBokehVisualization(new BokehGraph());
+VisualizationContainer.setD3Visualization(new D3Graph());
 
-    //let fits_data = getDataFromFITS(fits_file, 1);
-
-    //console.log("FITS Data");
-    //console.log(fits_data);
-
-    fits_data_file = fits_file;
-
-    //fits_data_file = fits_data[0];
-    //fits_data_json = fits_data[1];
-    //fits_data_columns = fits_data[2];
-}
-
-getFile("spi_acs_FULL_SKY_lc.fits");
-
-function extractFormValues() {
-
-    let formValues = {};
-
-    let selects = document.querySelectorAll('.form-select');
-
-    selects.forEach(select => {
-        let id = select.id;
-        let classes = select.className.split(' ');
-        let value = select.value;
-
-        if(window.getComputedStyle(select, null).getPropertyValue("display") !== 'none' && value !== 'none') {
-            formValues[id] = {classes, value};
-        }
-    });
-
-    let checkboxes = document.querySelectorAll('.checkbox');
-
-    checkboxes.forEach(checkbox => {
-        let id = checkbox.id;
-        let classes = checkbox.className.split(' ');
-        let checked = checkbox.checked;
-
-        console.log(id);
-        console.log(checked);
-
-        if (id.includes('select-error-bar') && checked) {
-            let correspondingSelect = document.querySelector(`#${id.replace('checkbox', 'select')}`);
-            if (correspondingSelect) {
-                formValues[id] = { classes: correspondingSelect.className.split(' '), value: correspondingSelect.value };
-            }
-        } else {
-            formValues[id] = { classes, checked };
-        }
-    });
-
-    return formValues;
-}
-
-
-function setGenerateButtonListener() {
-    let button_generate = document.getElementById('button-generate');
-    button_generate.addEventListener('click', function() {
-        let settings_data = extractFormValues();
-        console.log(settings_data);
-
-        if(parseInt(settings_data['select-lib'].value) === 0) {
-            createGraph0('graph-container1', fits_data_json, settings_data);
-            setDataContainer(fits_data_json);
-            setHeaderContainer(fits_data_file.hdus[settings_data['select-hdus'].value])
-        } else if(parseInt(settings_data['select-lib'].value) === 1) {
-            createGraph(fits_data_file, settings_data);
-            setDataContainer(fits_data_json);
-            setHeaderContainer(fits_data_file.hdus[settings_data['select-hdus'].value])
-        }
-    });
-}
-
-function setHDUSelectListener() {
-    let select_hdu = document.getElementById('select-hdus');
-    select_hdu.addEventListener('change', function(e) {
-        console.log(e);
-        let hdu_index = e.target.value;
-
-        resetSettingsOptions();
-
-        let fits_data = getDataFromFITS(fits_data_file, hdu_index)
-
-        fits_data_file = fits_data[0];
-        fits_data_json = fits_data[1];
-        fits_data_columns = fits_data[2];
-    });
-}
-
-setGenerateButtonListener();
-setHDUSelectListener();
+customElements.define('file-component', FileComponent);
+customElements.define('settings-component', SettingsComponent);
+customElements.define('visualization-component', VisualizationComponent);
+customElements.define('fits-component', FITSSettingsComponent);
+customElements.define('csv-component', CSVSettingsComponent);
