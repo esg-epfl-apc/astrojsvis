@@ -1,4 +1,4 @@
-class VisualizationSettings {
+export class VisualizationSettings {
 
     static default_settings = {
         library: '',

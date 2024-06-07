@@ -1,4 +1,7 @@
-class FileRegistry {
+import {FileRegistryChangeEvent} from "../events/FileRegistryChangeEvent";
+import {StringUtils} from "../utils/StringUtils";
+
+export class FileRegistry {
 
     static available_files = [];
 

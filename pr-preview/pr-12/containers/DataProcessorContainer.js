@@ -1,4 +1,8 @@
-class DataProcessorContainer {
+import { DataPreProcessor } from '../data_processors/DataPreProcessor.js'
+import { LightCurveProcessor } from '../data_processors/LightCurveProcessor.js'
+import { SpectrumProcessor } from '../data_processors/SpectrumProcessor.js'
+
+export class DataProcessorContainer {
 
     constructor() {
 

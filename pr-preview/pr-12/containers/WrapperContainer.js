@@ -1,4 +1,8 @@
-class WrapperContainer {
+import { FITSReaderWrapper } from '../wrappers/FITSReaderWrapper.js'
+import { BokehWrapper } from '../wrappers/BokehWrapper.js'
+import { D3Wrapper } from '../wrappers/D3Wrapper.js'
+
+export class WrapperContainer {
 
     static fits_reader_wrapper = null;
     static bokeh_wrapper = null;
@@ -18,7 +22,7 @@ class WrapperContainer {
         WrapperContainer.bokeh_wrapper = bokeh_wrapper;
     }
 
-    static setD3Wrapper() {
+    static setD3Wrapper(d3_wrapper) {
         WrapperContainer.d3_wrapper = d3_wrapper;
     }
 

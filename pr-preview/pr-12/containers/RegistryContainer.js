@@ -1,4 +1,6 @@
-class RegistryContainer {
+import { EventSubscribersRegistry } from '../registries/EventSubscribersRegistry.js'
+
+export class RegistryContainer {
 
     constructor() {
 

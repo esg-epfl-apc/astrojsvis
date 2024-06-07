@@ -1,4 +1,9 @@
-class D3Wrapper {
+import {ConfigurationEvent} from "../events/ConfigurationEvent";
+import {DataProcessorContainer} from "../containers/DataProcessorContainer";
+import {VisualizationContainer} from "../containers/VisualizationContainer";
+import {SettingsConfiguration} from "../settings/SettingsConfiguration";
+
+export class D3Wrapper {
 
     static library = "d3";
     static container_id = "visualization-container";

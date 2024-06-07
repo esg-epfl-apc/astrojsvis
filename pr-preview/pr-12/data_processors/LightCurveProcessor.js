@@ -1,4 +1,4 @@
-class LightCurveProcessor {
+export class LightCurveProcessor {
 
     static header_cards = [
         'TIMEREF',
@@ -71,9 +71,6 @@ class LightCurveProcessor {
         //let raw_fits_data = this.hdu.data;
         let raw_fits_data = this.fits_reader_wrapper.getDataFromHDU(this.hdu_index);
         let data = {};
-
-        console.log(this.hdu.data);
-        console.log(raw_fits_data);
 
         let x;
         let y;

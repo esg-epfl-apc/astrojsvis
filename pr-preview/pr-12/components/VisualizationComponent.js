@@ -1,4 +1,4 @@
-class VisualizationComponent extends HTMLElement {
+export class VisualizationComponent extends HTMLElement {
 
     container_id;
     container

@@ -1,4 +1,6 @@
-class FileRegistryChangeEvent {
+import {RegistryContainer} from "../containers/RegistryContainer";
+
+export class FileRegistryChangeEvent {
 
     static defaultOptions = {
         bubbles: true,
@@ -30,9 +32,7 @@ class FileRegistryChangeEvent {
         if(FileRegistryChangeEvent.main_root_element === null) {
             FileRegistryChangeEvent.main_root_element = document.getElementById(FileRegistryChangeEvent.main_root_id);
         }
-
-        console.log(this.event);
-
+        
         document.dispatchEvent(this.event);
     }
 

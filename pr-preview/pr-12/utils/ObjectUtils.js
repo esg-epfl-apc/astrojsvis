@@ -1,4 +1,4 @@
-class ObjectUtils {
+export class ObjectUtils {
 
     static deep_merge(base_object, merging_object) {
         let merged_object = {};

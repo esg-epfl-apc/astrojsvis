@@ -1,3 +1,16 @@
+import { FITSReaderWrapper } from './wrappers/FITSReaderWrapper.js'
+import { BokehWrapper } from './wrappers/BokehWrapper.js'
+import { D3Wrapper } from './wrappers/D3Wrapper.js'
+import { WrapperContainer } from './containers/WrapperContainer.js'
+import { VisualizationContainer } from './containers/VisualizationContainer.js'
+import { FileComponent } from './components/FileComponent.js'
+import { SettingsComponent } from './components/SettingsComponent.js'
+import { VisualizationComponent } from './components/VisualizationComponent.js'
+import { FITSSettingsComponent } from './components/file_type/FITSSettingsComponent.js'
+import { CSVSettingsComponent } from './components/file_type/CSVSettingsComponent.js'
+import { D3Graph } from "./visualizations/D3Graph";
+import { BokehGraph } from "./visualizations/BokehGraph";
+
 let file_path = window.location.href + "_test_files/spiacs_lc_query.fits";
 
 let fits_reader_wrapper = new FITSReaderWrapper(file_path);

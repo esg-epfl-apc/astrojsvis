@@ -1,4 +1,9 @@
-class FileComponent extends HTMLElement {
+import {WrapperContainer} from "../containers/WrapperContainer";
+import {FileRegistry} from "../registries/FileRegistry";
+import {FileRegistryChangeEvent} from "../events/FileRegistryChangeEvent";
+import {FITSSettingsComponent} from "./file_type/FITSSettingsComponent";
+
+export class FileComponent extends HTMLElement {
 
     static component_id = "file_component";
     static select_file = "select-file";
@@ -65,8 +70,6 @@ class FileComponent extends HTMLElement {
 
             if(file_type === 'fits') {
                 file.arrayBuffer().then(arrayBuffer => {
-                    console.log(arrayBuffer);
-
                     let fits_reader_wrapper = WrapperContainer.getFITSReaderWrapper();
 
                     fits_reader_wrapper.initializeFromBuffer(arrayBuffer, file.name);
@@ -195,7 +198,6 @@ class FileComponent extends HTMLElement {
         current_files_list_element.innerHTML = '';
 
         let file_elements = this._createFileSelection('current');
-        console.log(file_elements);
 
         file_elements.forEach((file_element) => {
             current_files_list_element.appendChild(file_element);
@@ -208,14 +210,11 @@ class FileComponent extends HTMLElement {
     }
 
     setFileSettingsPanel(file) {
-        console.log(file);
-
         this.clearFileSettingsPanel();
 
         if(file.type === 'fits') {
 
             let is_current = FileRegistry.isFileCurrent(file.id);
-            console.log(is_current);
 
             let file_settings_component = new FITSSettingsComponent(file, is_current);
 

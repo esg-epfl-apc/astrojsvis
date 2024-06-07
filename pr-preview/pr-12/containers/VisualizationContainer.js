@@ -1,4 +1,7 @@
-class VisualizationContainer {
+import { BokehGraph } from '../visualizations/BokehGraph'
+import { D3Graph } from '../visualizations/D3Graph'
+
+export class VisualizationContainer {
 
     static bokeh_graph = null;
     static d3_graph = null;

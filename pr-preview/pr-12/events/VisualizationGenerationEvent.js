@@ -1,4 +1,6 @@
-class VisualizationGenerationEvent {
+import { NoEventToDispatchError } from "../errors/NoEventToDispatchError";
+
+export class VisualizationGenerationEvent {
 
     static defaultOptions = {
         bubbles: true,

@@ -1,4 +1,6 @@
-class TimeHelper {
+import {UnsupportedTimeFormatError} from "../errors/UnsupportedTimeFormatError";
+
+export class TimeHelper {
 
     static time_types = {
         'JD': 'jd',

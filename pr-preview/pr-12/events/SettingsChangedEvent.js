@@ -1,4 +1,6 @@
-class SettingsChangedEvent {
+import {NoEventToDispatchError} from "../errors/NoEventToDispatchError";
+
+export class SettingsChangedEvent {
 
     static defaultOptions = {
         bubbles: true,

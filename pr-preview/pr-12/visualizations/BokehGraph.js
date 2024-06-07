@@ -1,4 +1,4 @@
-class BokehGraph {
+export class BokehGraph {
 
     container_id = null;
     container = null;

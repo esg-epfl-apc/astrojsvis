@@ -1,4 +1,9 @@
-class DataPreProcessor {
+import {WrapperContainer} from "../containers/WrapperContainer";
+import {FileRegistry} from "../registries/FileRegistry";
+import {SpectrumProcessor} from "./SpectrumProcessor";
+import {DataProcessorContainer} from "../containers/DataProcessorContainer";
+
+export class DataPreProcessor {
 
     constructor() {
 
@@ -42,6 +47,13 @@ class DataPreProcessor {
                     SpectrumProcessor.processed_columns_name.includes(error_bar.column_name)) {
 
                     column_data = this.getSpectrumProcessedColumn(error_bar.hdu_index, error_bar.column_name, frw)
+
+                    if(error_bar.column_name === SpectrumProcessor.E_MID_LOG) {
+                        column_data.forEach(col_data => {
+                            console.log(col_data);
+                        })
+                    }
+
                 } else {
                     column_data = frw.getColumnDataFromHDU(error_bar.hdu_index, error_bar.column_name);
                 }
@@ -56,12 +68,9 @@ class DataPreProcessor {
     }
 
     datasetToJSONData(dataset_settings_object) {
-        console.log(dataset_settings_object);
-
         let rows = [];
 
         dataset_settings_object.axis.forEach((axis) => {
-            console.log(axis);
 
             axis.data.forEach((value, index) => {
                 if (!rows[index]) {
@@ -74,7 +83,6 @@ class DataPreProcessor {
 
         if(dataset_settings_object.hasOwnProperty('error_bars')) {
             dataset_settings_object.error_bars.forEach((error_bar) => {
-                console.log(error_bar);
 
                 error_bar.data.forEach((value, index) => {
                     if (!rows[index]) {
