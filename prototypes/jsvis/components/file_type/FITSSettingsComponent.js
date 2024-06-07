@@ -1,4 +1,8 @@
-class FITSSettingsComponent extends HTMLElement {
+import {WrapperContainer} from "../../containers/WrapperContainer";
+import {FileRegistry} from "../../registries/FileRegistry";
+import {FileRegistryChangeEvent} from "../../events/FileRegistryChangeEvent";
+
+export class FITSSettingsComponent extends HTMLElement {
 
     container_id = "fits-settings-container";
     select_hdu_id = "select-hdu-file";
@@ -143,16 +147,12 @@ class FITSSettingsComponent extends HTMLElement {
 
         let select_hdu = document.getElementById(this.select_hdu_id);
 
-        console.log(select_hdu);
-        console.log(this.select_hdu_id);
-
         select_hdu.innerHTML = '';
 
         let frw = WrapperContainer.getFITSReaderWrapper();
         frw.setFile(this.file.file);
 
         let hdus = frw.getHDUs();
-        console.log(hdus);
 
         let options = [];
         hdus.forEach((hdu) => {
@@ -197,15 +197,10 @@ class FITSSettingsComponent extends HTMLElement {
 
             this.resetContainerForCurrentFile();
 
-            console.log(FileRegistry.getCurrentFilesList());
         });
 
         remove_from_plot_btn.addEventListener('click', (event) => {
             FileRegistry.removeFromCurrentFiles(this.file.id);
-
-            console.log("SWITCH");
-            console.log(this.file.id);
-            console.log(FileRegistry.getCurrentFilesList());
 
             this.is_current = false;
 
@@ -213,8 +208,6 @@ class FITSSettingsComponent extends HTMLElement {
             frce.dispatchToSubscribers();
 
             this.resetContainerForCurrentFile();
-            console.log(FileRegistry.getCurrentFilesList());
-            console.log(FileRegistry.getAvailableFilesList());
         });
     }
 
@@ -249,19 +242,11 @@ class FITSSettingsComponent extends HTMLElement {
 
         try {
 
-            console.log("SETTINGS TABLE");
-            console.log(hdu_index)
-
             let hdu_columns_name = frw.getColumnsNameFromHDU(hdu_index);
             let hdu_data = frw.getColumnsJSONDataFromHDU(hdu_index)
 
             let header_row = table_data.tHead.insertRow();
             tbody = table_data.querySelector('tbody');
-
-            console.log(tbody);
-            console.log(hdu_columns_name);
-            console.log(hdu_data);
-            console.log(header_row);
 
             hdu_columns_name.forEach((column) => {
                 let header_cell = document.createElement('th');
@@ -270,9 +255,6 @@ class FITSSettingsComponent extends HTMLElement {
             });
 
             hdu_data.forEach(data_point => {
-
-                console.log("DATA");
-                console.log(data_point);
 
                 const row = tbody.insertRow();
                 for (let key in data_point) {
@@ -285,7 +267,6 @@ class FITSSettingsComponent extends HTMLElement {
 
         } catch(e) {
             console.log("DATA PARSING ERROR");
-            console.log(e);
         }
     }
 

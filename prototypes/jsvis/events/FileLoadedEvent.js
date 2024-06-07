@@ -1,4 +1,6 @@
-class FileLoadedEvent {
+import {RegistryContainer} from "../containers/RegistryContainer";
+
+export class FileLoadedEvent {
 
     static defaultOptions = {
         bubbles: true,
@@ -30,9 +32,6 @@ class FileLoadedEvent {
         if(FileLoadedEvent.main_root_element === null) {
             FileLoadedEvent.main_root_element = document.getElementById(FileLoadedEvent.main_root_id);
         }
-
-        console.log(FileLoadedEvent.main_root_element);
-        console.log(this.event);
 
         document.dispatchEvent(this.event);
     }

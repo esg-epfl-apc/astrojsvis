@@ -1,4 +1,10 @@
-class SettingsComponent extends HTMLElement {
+import {SettingsContainer} from "../containers/SettingsContainer";
+import {SettingsChangedEvent} from "../events/SettingsChangedEvent";
+import {VisualizationGenerationEvent} from "../events/VisualizationGenerationEvent";
+import {FileRegistry} from "../registries/FileRegistry";
+import {WrapperContainer} from "../containers/WrapperContainer";
+
+export class SettingsComponent extends HTMLElement {
 
     container_id;
     container
@@ -93,8 +99,6 @@ class SettingsComponent extends HTMLElement {
 
     handleConfigurationEvent(event) {
         let configuration_object = event.detail.configuration_object;
-
-        console.log(configuration_object);
 
         this.updateSettings(configuration_object);
     }
@@ -194,16 +198,11 @@ class SettingsComponent extends HTMLElement {
             return acc;
         }, {});
 
-        console.log("Columns by file");
-        console.log(columns_by_file);
-
         let select_options = [];
 
         let i = 1;
         for (let file_id in columns_by_file) {
             if (columns_by_file.hasOwnProperty(file_id)) {
-                console.log(columns_by_file[file_id]);
-                console.log(i);
                 let file = FileRegistry.getFileById(file_id);
                 let file_name = file.file_name;
 
@@ -214,7 +213,7 @@ class SettingsComponent extends HTMLElement {
             }
             i++;
         }
-        
+
         this._setSelectGroupAxis(select_options);
         this._setSelectGroupErrorBars(select_options);
     }

@@ -1,4 +1,6 @@
-class SettingsConfiguration {
+import {ObjectUtils} from "../utils/ObjectUtils";
+
+export class SettingsConfiguration {
 
     static default_configuration = {
         'library-settings': {

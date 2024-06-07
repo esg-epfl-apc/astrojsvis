@@ -1,4 +1,6 @@
-class EventSubscribersRegistry {
+import {EventNotFoundInRegistryError} from "../errors/EventNotFoundInRegistryError";
+
+export class EventSubscribersRegistry {
 
     static events_subscribers = {
         'fits-loaded': ['settings-component', 'file-component'],

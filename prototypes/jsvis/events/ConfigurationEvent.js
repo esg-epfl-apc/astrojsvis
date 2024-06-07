@@ -1,4 +1,6 @@
-class ConfigurationEvent {
+import {RegistryContainer} from "../containers/RegistryContainer";
+
+export class ConfigurationEvent {
 
     static defaultOptions = {
         bubbles: true,

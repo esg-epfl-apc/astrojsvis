@@ -1,4 +1,6 @@
-class FITSLoadedEvent {
+import {RegistryContainer} from "../containers/RegistryContainer";
+
+export class FITSLoadedEvent {
 
     static defaultOptions = {
         bubbles: true,
@@ -30,9 +32,6 @@ class FITSLoadedEvent {
         if(FITSLoadedEvent.main_root_element === null) {
             FITSLoadedEvent.main_root_element = document.getElementById(FITSLoadedEvent.main_root_id);
         }
-
-        console.log(FITSLoadedEvent.main_root_element);
-        console.log(this.event);
 
         document.dispatchEvent(this.event);
     }

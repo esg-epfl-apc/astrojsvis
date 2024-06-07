@@ -1,4 +1,4 @@
-class EventNotFoundInRegistryError extends Error {
+export class EventNotFoundInRegistryError extends Error {
     constructor(message) {
         super(message);
         this.name = "EventNotFoundInRegistryError";

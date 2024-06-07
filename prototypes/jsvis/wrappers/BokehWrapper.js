@@ -1,4 +1,10 @@
-class BokehWrapper {
+import {ConfigurationEvent} from "../events/ConfigurationEvent";
+import {DataProcessorContainer} from "../containers/DataProcessorContainer";
+import {VisualizationContainer} from "../containers/VisualizationContainer";
+import {WrapperContainer} from "../containers/WrapperContainer";
+import {SettingsConfiguration} from "../settings/SettingsConfiguration";
+
+export class BokehWrapper {
 
     static container_id = 'visualization-container';
 
@@ -30,7 +36,6 @@ class BokehWrapper {
     }
 
     _setContainer() {
-        console.log(document.getElementById(BokehWrapper.container_id));
         this.container = document.getElementById(BokehWrapper.container_id);
     }
 
@@ -97,7 +102,6 @@ class BokehWrapper {
                 }
 
                 dataset_settings.error_bars = error_bars_settings;
-
             }
 
             let dpp = DataProcessorContainer.getDataProcessorContainer().getDataPreProcessor();
@@ -115,9 +119,6 @@ class BokehWrapper {
             axis = {x: processed_data.axis[0].column_name, y: processed_data.axis[1].column_name};
             let labels = axis;
 
-            console.log(axis);
-            console.log(processed_json_data);
-
             processed_data.axis[0].data = processed_data.axis[0].data.map(value => isNaN(value) ? 0 : value);
             processed_data.axis[1].data = processed_data.axis[1].data.map(value => isNaN(value) ? 0 : value);
 
@@ -133,7 +134,13 @@ class BokehWrapper {
                 data.dx = processed_data.error_bars[0].data.map(value => isNaN(value) ? 0 : value);
                 data.dy = processed_data.error_bars[1].data.map(value => isNaN(value) ? 0 : value);
 
-                data = this._processErrorBarData(data);
+                let asymmetric_uncertainties = false;
+
+                if(data_type === 'spectrum') {
+                    asymmetric_uncertainties = true;
+                }
+
+                data = this._processErrorBarData(data, asymmetric_uncertainties);
 
                 has_error_bars = true;
             }
@@ -200,15 +207,21 @@ class BokehWrapper {
         };
     }
 
-    _processErrorBarData(data) {
+    _processErrorBarData(data, asymetric_uncertainties = false) {
+
+        let div_factor= 2;
+
+        if(asymetric_uncertainties) {
+            div_factor = 1;
+        }
 
         let y_low = [], y_up = [], x_low = [], x_up = [];
 
         for (let i in data.dy) {
             y_low[i] = data.y[i] - data.dy[i];
             y_up[i] = data.y[i] + data.dy[i];
-            x_low[i] = data.x[i] - data.dx[i] / 2;
-            x_up[i] = data.x[i] + data.dx[i] / 2;
+            x_low[i] = data.x[i] - data.dx[i] / div_factor;
+            x_up[i] = data.x[i] + data.dx[i] / div_factor;
         }
 
         data.y_low = y_low;

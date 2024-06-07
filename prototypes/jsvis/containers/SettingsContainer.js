@@ -1,4 +1,7 @@
-class SettingsContainer {
+import { VisualizationSettings } from '../settings/VisualizationSettings.js'
+import { SettingsConfiguration } from '../settings/SettingsConfiguration.js'
+
+export class SettingsContainer {
 
     constructor() {
 

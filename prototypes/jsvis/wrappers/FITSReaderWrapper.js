@@ -1,4 +1,10 @@
-class FITSReaderWrapper {
+import {InvalidURLError} from "../errors/InvalidURLError";
+import {HDUNotTabularError} from "../errors/HDUNotTabularError";
+import {FileRegistry} from "../registries/FileRegistry";
+import {StringUtils} from "../utils/StringUtils";
+import {FileLoadedEvent} from "../events/FileLoadedEvent";
+
+export class FITSReaderWrapper {
 
     file_path = null;
     file = null;

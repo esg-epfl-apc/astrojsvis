@@ -1,4 +1,4 @@
-class DatasetSettings {
+export class DatasetSettings {
 
     static default_configuration = {
         'library-settings': {

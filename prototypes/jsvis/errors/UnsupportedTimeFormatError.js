@@ -1,4 +1,4 @@
-class UnsupportedTimeFormatError extends Error {
+export class UnsupportedTimeFormatError extends Error {
     constructor(message) {
         super(message);
         this.name = "UnsupportedTimeFormatError";

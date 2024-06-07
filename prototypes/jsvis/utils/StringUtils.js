@@ -1,4 +1,4 @@
-class StringUtils {
+export class StringUtils {
 
     static cleanFileName(str) {
         if (str.startsWith('.') || str.startsWith('/')) {

@@ -1,4 +1,4 @@
-class D3Graph {
+export class D3Graph {
 
     x_scale;
     x_scale_type;
@@ -170,16 +170,9 @@ class D3Graph {
     }
 
     _setXScale() {
-        console.log(this.x_scale_type);
-        console.log(this.dataset);
-
-        console.log(this.x_axis_data_col);
-
         this.x_scale = D3Graph.scale_functions[this.x_scale_type]()
             .domain(d3.extent(this.dataset, d => d[this.x_axis_data_col]))
             .range([ 0, this.width ]);
-
-        console.log(this.x_scale);
     }
 
     _setYScale() {
@@ -273,14 +266,6 @@ class D3Graph {
     _setErrorBars(error_bars) {
 
         this.error_bars = error_bars;
-
-        console.log("error bars");
-
-        console.log(error_bars);
-        console.log(error_bars.x);
-        console.log(error_bars.y);
-        console.log(this.x_axis_data_col);
-        console.log(this.y_axis_data_col);
 
         let error_bar_x = {x: error_bars.x};
 
