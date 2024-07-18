@@ -50,7 +50,7 @@ export class DataPreProcessor {
 
                     if(error_bar.column_name === SpectrumProcessor.E_MID_LOG) {
                         column_data.forEach(col_data => {
-                            console.log(col_data);
+
                         })
                     }
 
@@ -99,6 +99,9 @@ export class DataPreProcessor {
 
     processErrorBarDataJSON(dataset, axis, error_bars) {
 
+        console.log(error_bars);
+        console.log(dataset);
+
         let error_bar_x_values = [];
         let error_bar_y_values = [];
 
@@ -108,34 +111,56 @@ export class DataPreProcessor {
         let error_bar_x_column = error_bars.x;
         let error_bar_y_column = error_bars.y;
 
+        let error_bars_object = {};
+
         dataset.forEach(function(datapoint){
-            let error_bar_x = [
-                {
-                    bound: parseFloat(datapoint[axis_y]) - parseFloat(datapoint[error_bar_y_column]),
-                    [axis_x]: parseFloat(datapoint[axis_x])
-                },
-                {
-                    bound: parseFloat(datapoint[axis_y]) + parseFloat(datapoint[error_bar_y_column]),
-                    [axis_x]: parseFloat(datapoint[axis_x])
-                }
-            ]
 
-            let error_bar_y = [
-                {
-                    bound: parseFloat(datapoint[axis_x]) - parseFloat(datapoint[error_bar_x_column]),
-                    [axis_y]: parseFloat(datapoint[axis_y])
-                },
-                {
-                    bound: parseFloat(datapoint[axis_x]) + parseFloat(datapoint[error_bar_x_column]),
-                    [axis_y]: parseFloat(datapoint[axis_y])
-                }
-            ]
+            if(error_bars.x) {
 
-            error_bar_x_values.push(error_bar_x);
-            error_bar_y_values.push(error_bar_y);
+                console.log("X");
+                console.log(datapoint[axis_x]);
+                console.log(error_bar_x_column);
+
+                let error_bar_x = [
+                    {
+                        bound: parseFloat(datapoint[axis_x]) - parseFloat(datapoint[error_bar_x_column]),
+                        [axis_y]: parseFloat(datapoint[axis_y])
+                    },
+                    {
+                        bound: parseFloat(datapoint[axis_x]) + parseFloat(datapoint[error_bar_x_column]),
+                        [axis_y]: parseFloat(datapoint[axis_y])
+                    }
+                ]
+
+                error_bar_x_values.push(error_bar_x);
+            }
+
+            if(error_bars.y) {
+
+                console.log("Y");
+                console.log(datapoint[axis_x]);
+                console.log(error_bar_y_column);
+
+                let error_bar_y = [
+                    {
+                        bound: parseFloat(datapoint[axis_y]) - parseFloat(datapoint[error_bar_y_column]),
+                        [axis_x]: parseFloat(datapoint[axis_x])
+                    },
+                    {
+                        bound: parseFloat(datapoint[axis_y]) + parseFloat(datapoint[error_bar_y_column]),
+                        [axis_x]: parseFloat(datapoint[axis_x])
+                    }
+                ]
+
+                error_bar_y_values.push(error_bar_y);
+            }
+
         })
 
-        return { x: error_bar_x_values, y: error_bar_y_values }
+        if(error_bars.x) error_bars_object.x = error_bar_x_values;
+        if(error_bars.y) error_bars_object.y = error_bar_y_values;
+
+        return error_bars_object;
     }
 
     getSpectrumProcessedColumn(hdu_index, column_name, fits_reader_wrapper) {

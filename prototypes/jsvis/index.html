@@ -92,6 +92,10 @@
             width: 100%;
         }
 
+        .spectrum-settings {
+            display: none;
+        }
+
         .column-graph {
             padding: 20px;
             box-sizing: border-box;
@@ -118,6 +122,71 @@
 
         .form-checkbox {
             margin-top: 10px;
+        }
+
+        #column-main-input {
+            width: 690px;
+            height: auto;
+            background-color: #FFFFFF;
+            border: 1px solid #000000;
+            position: relative;
+            left: -400px;
+            display: none;
+        }
+
+        #column-display-list {
+            list-style: decimal;
+        }
+
+        #column-display-list button {
+            margin-left: 5px;
+        }
+
+        .column-input-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .column-input-keyboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .button-grid button {
+            margin-bottom: 5px;
+            width: 80px;
+        }
+
+        #input-display {
+            width: 100%;
+            height: 40px;
+            background-color: #FFFFFF;
+        }
+
+        #input-display input {
+            width: 100%;
+            height: 100%;
+        }
+
+        #column-input-list {
+            height: 170px;
+            padding-left: 10px;
+            padding-right: 10px;
+            overflow: scroll;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.5) rgba(0, 0, 0, 0.1);
+            list-style: none;
+            border: 1px solid #000000;
+        }
+
+        #column-input-list li {
+            cursor: pointer;
         }
 
         #select-axis-x-scale {
@@ -193,6 +262,10 @@
         .inner-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(50%, 1fr));
+        }
+
+        .visible {
+            display: block !important;
         }
 
     </style>
@@ -303,6 +376,15 @@
                                     <select id="select-hdus" class="form-select">
                                         <option selected>HDUs</option>
                                     </select>
+                                </div>
+                            </div>
+                            <!-- COLUMN SETTINGS -->
+                            <div id="columns-settings" class="card">
+                                <div id="card-body-columns" class="card-body">
+                                    <h6 class="card-title">Column Creation</h6>
+                                    <!--arithmetic-column-component id="arithmetic-column-component">
+
+                                    </arithmetic-column-component!-->
                                 </div>
                             </div>
                             <!-- AXIS SETTINGS -->

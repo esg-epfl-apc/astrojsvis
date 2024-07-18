@@ -108,10 +108,7 @@ export class BokehWrapper {
 
             let processed_data = dpp.getProcessedDataset(dataset_settings);
 
-            let processed_json_data = dpp.datasetToJSONData(processed_data);
-
             let data_type = this.settings_object.getDataTypeSettings();
-            let hdu = this.settings_object.getHDUsSettings();
 
             let scales = this.settings_object.getScalesSettings();
 
@@ -126,6 +123,25 @@ export class BokehWrapper {
             let data = {x: processed_data.axis[0].data, y: processed_data.axis[1].data};
 
             if(error_bars) {
+
+                console.log(processed_data.error_bars);
+
+                let error_bars_object = {};
+
+                processed_data.error_bars.forEach((error_bar) => {
+                    error_bar.data = error_bar.data.map(value => !isFinite(value) ? 0 : value);
+                    error_bar.data = error_bar.data.map(value => isNaN(value) ? 0 : value);
+
+                    error_bars_object[error_bar.axis] = error_bar.column_name;
+
+                    if(error_bar.axis === 'x') {
+                        data.dx = error_bar.data;
+                    } else if(error_bar.axis === 'y') {
+                        data.dy = error_bar.data;
+                    }
+                })
+
+                /*
                 error_bars = {x: processed_data.error_bars[0].column_name, y: processed_data.error_bars[1].column_name};
 
                 processed_data.error_bars[0].data = processed_data.error_bars[0].data.map(value => !isFinite(value) ? 0 : value);
@@ -133,6 +149,7 @@ export class BokehWrapper {
 
                 data.dx = processed_data.error_bars[0].data.map(value => isNaN(value) ? 0 : value);
                 data.dy = processed_data.error_bars[1].data.map(value => isNaN(value) ? 0 : value);
+                */
 
                 let asymmetric_uncertainties = false;
 
@@ -146,7 +163,6 @@ export class BokehWrapper {
             }
 
             let ranges = this.settings_object.getRangesSettings();
-            let has_custom_range = false;
             let custom_range_data = null;
 
             if(ranges != null) {
@@ -166,29 +182,6 @@ export class BokehWrapper {
 
             visualization.initializeGraph();
         }
-    }
-
-    getProcessedData(data_type, hdu_index, axis, error_bars) {
-        let data = null;
-
-        let dpc = DataProcessorContainer.getDataProcessorContainer();
-        let data_processor;
-
-        let frw = WrapperContainer.getFITSReaderWrapper();
-
-        if(data_type === 'light-curve') {
-            data_processor = dpc.getLightCurveProcessor(frw, hdu_index);
-        } else if(data_type === 'spectrum') {
-            data_processor = dpc.getSpectrumProcessor(frw, hdu_index);
-        }
-
-        data = data_processor.processDataRawJSON(axis, error_bars);
-
-        if(error_bars) {
-            data = this._processErrorBarData(data);
-        }
-
-        return data;
     }
 
     _getColumnSettings(column_settings) {
@@ -215,6 +208,38 @@ export class BokehWrapper {
             div_factor = 1;
         }
 
+        if(data.dx) {
+            let x_low = [];
+            let x_up = [];
+
+            for(let i in data.dx) {
+                x_low[i] = data.x[i] - data.dx[i] / div_factor;
+                x_up[i] = data.x[i] + data.dx[i] / div_factor;
+            }
+
+            data.x_low = x_low;
+            data.x_up = x_up;
+
+            delete data.dx;
+        }
+
+        if(data.dy) {
+            let y_low = [];
+            let y_up = [];
+
+            for(let i in data.dy) {
+                y_low[i] = data.y[i] - data.dy[i];
+                y_up[i] = data.y[i] + data.dy[i];
+            }
+
+            data.y_low = y_low;
+            data.y_up = y_up;
+
+            delete data.dy;
+
+        }
+
+        /*
         let y_low = [], y_up = [], x_low = [], x_up = [];
 
         for (let i in data.dy) {
@@ -231,6 +256,7 @@ export class BokehWrapper {
 
         delete data.dy;
         delete data.dx;
+        */
 
         return data;
     }

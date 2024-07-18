@@ -83,9 +83,11 @@ export class D3Graph {
             this.x_scale_type = scales['x'];
             this.y_scale_type = scales['y'];
 
-            if (error_bars) {
+            if(error_bars) {
                 this.has_error_bars = true;
                 this.error_bars = error_bars;
+
+                console.log(error_bars);
 
                 this.x_axis_data_col_error_bar = axis['x'].value;
                 this.y_axis_data_col_error_bar = axis['y'].value;
@@ -267,34 +269,35 @@ export class D3Graph {
 
         this.error_bars = error_bars;
 
-        let error_bar_x = {x: error_bars.x};
+        if(error_bars.y) {
+            let line_error_bar_x = d3.line()
+                .x(d => this.x_scale(d[this.x_axis_data_col]))
+                .y(d => this.y_scale(d.bound));
 
-        let line_error_bar_x = d3.line()
-            .x(d => this.x_scale(d[this.x_axis_data_col]))
-            .y(d => this.y_scale(d.bound));
+            error_bars.y.forEach((error_bar) => {
+                d3.select('#data-plot').append("path")
+                    .attr("class", "error-bar-x")
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line_error_bar_x(error_bar));
+            })
+        }
 
-        error_bars.x.forEach((error_bar) => {
-            d3.select('#data-plot').append("path")
-                .attr("class", "error-bar-x")
-                .attr("fill", "none")
-                .attr("stroke", "steelblue")
-                .attr("stroke-width", 1.5)
-                .attr("d", line_error_bar_x(error_bar));
-        })
+        if(error_bars.x) {
+            let line_error_bar_y = d3.line()
+                .x(d => this.x_scale(d.bound))
+                .y(d => this.y_scale(d[this.y_axis_data_col]));
 
-        let line_error_bar_y = d3.line()
-            .x(d => this.x_scale(d.bound))
-            .y(d => this.y_scale(d[this.y_axis_data_col]));
-
-        error_bars.y.forEach((error_bar) => {
-            d3.select('#data-plot').append("path")
-                .attr("class", "error-bar-x")
-                .attr("fill", "none")
-                .attr("stroke", "steelblue")
-                .attr("stroke-width", 1.5)
-                .attr("d", line_error_bar_y(error_bar));
-        })
-
+            error_bars.x.forEach((error_bar) => {
+                d3.select('#data-plot').append("path")
+                    .attr("class", "error-bar-x")
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line_error_bar_y(error_bar));
+            })
+        }
     }
 
     _setAxisLine() {
@@ -373,31 +376,35 @@ export class D3Graph {
 
         if(this.has_error_bars) {
 
-            let line_error_bar_x = d3.line()
-                .x(d => rescaled_x(d[this.x_axis_data_col]))
-                .y(d => rescaled_y(d.bound));
+            if(this.error_bars.y) {
+                let line_error_bar_x = d3.line()
+                    .x(d => rescaled_x(d[this.x_axis_data_col]))
+                    .y(d => rescaled_y(d.bound));
 
-            this.error_bars.x.forEach((error_bar) => {
-                d3.select('#data-plot').append("path")
-                    .attr("class", "error-bar-x")
-                    .attr("fill", "none")
-                    .attr("stroke", "steelblue")
-                    .attr("stroke-width", 1.5)
-                    .attr("d", line_error_bar_x(error_bar));
-            })
+                this.error_bars.y.forEach((error_bar) => {
+                    d3.select('#data-plot').append("path")
+                        .attr("class", "error-bar-x")
+                        .attr("fill", "none")
+                        .attr("stroke", "steelblue")
+                        .attr("stroke-width", 1.5)
+                        .attr("d", line_error_bar_x(error_bar));
+                })
+            }
 
-            let line_error_bar_y = d3.line()
-                .x(d => rescaled_x(d.bound))
-                .y(d => rescaled_y(d[this.y_axis_data_col]));
+            if(this.error_bars.x) {
+                let line_error_bar_y = d3.line()
+                    .x(d => rescaled_x(d.bound))
+                    .y(d => rescaled_y(d[this.y_axis_data_col]));
 
-            this.error_bars.y.forEach((error_bar) => {
-                d3.select('#data-plot').append("path")
-                    .attr("class", "error-bar-x")
-                    .attr("fill", "none")
-                    .attr("stroke", "steelblue")
-                    .attr("stroke-width", 1.5)
-                    .attr("d", line_error_bar_y(error_bar));
-            })
+                this.error_bars.x.forEach((error_bar) => {
+                    d3.select('#data-plot').append("path")
+                        .attr("class", "error-bar-x")
+                        .attr("fill", "none")
+                        .attr("stroke", "steelblue")
+                        .attr("stroke-width", 1.5)
+                        .attr("d", line_error_bar_y(error_bar));
+                })
+            }
         }
 
     }

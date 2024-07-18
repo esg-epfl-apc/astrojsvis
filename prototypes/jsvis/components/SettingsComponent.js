@@ -3,6 +3,9 @@ import {SettingsChangedEvent} from "../events/SettingsChangedEvent";
 import {VisualizationGenerationEvent} from "../events/VisualizationGenerationEvent";
 import {FileRegistry} from "../registries/FileRegistry";
 import {WrapperContainer} from "../containers/WrapperContainer";
+import {ColumnUtils} from "../utils/ColumnUtils";
+import {RegistryContainer} from "../containers/RegistryContainer";
+import {FileRegistryChangeEvent} from "../events/FileRegistryChangeEvent";
 
 export class SettingsComponent extends HTMLElement {
 
@@ -50,6 +53,7 @@ export class SettingsComponent extends HTMLElement {
         this.handleHDUsChangeEvent = this.handleHDUsChangeEvent.bind(this);
         this.handleGenerateEvent = this.handleGenerateEvent.bind(this);
         this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
+        this.handleArithmeticColumnChangeEvent = this.handleArithmeticColumnChangeEvent.bind(this);
 
         this._setupExternalListeners();
         this._setupInnerListeners();
@@ -68,12 +72,14 @@ export class SettingsComponent extends HTMLElement {
         this.addEventListener('select-data-type-change', this.handleDataTypeChangeEvent);
         this.addEventListener('select-hdus-change', this.handleHDUsChangeEvent);
         this.addEventListener('button-generate-click', this.handleGenerateEvent);
+        this.addEventListener('arithmetic-column-change', this.handleArithmeticColumnChangeEvent);
     }
 
     _setupInnerElementsListeners() {
         this._setSelectLibraryListener();
         this._setSelectDataTypeListener()
         this._setSelectHDUsListener();
+        this._setSelectAxisListener();
         this._setGenerateButtonListener();
         this._setCalculationRadioListeners();
     }
@@ -177,7 +183,12 @@ export class SettingsComponent extends HTMLElement {
             if(file.type === 'fits') {
                 let fits_reader_wrapper = WrapperContainer.getFITSReaderWrapper();
 
-                fits_reader_wrapper.setFile(file.file);
+                if(file.product_type !== 'spectrum') {
+                    fits_reader_wrapper.setFile(file.file);
+                } else {
+                    fits_reader_wrapper.setFileFromFileObject(file);
+                }
+
                 let fits_columns = fits_reader_wrapper.getAllColumns();
 
                 fits_columns.forEach((fits_column) => {
@@ -215,7 +226,13 @@ export class SettingsComponent extends HTMLElement {
         }
 
         this._setSelectGroupAxis(select_options);
+
+        select_options.unshift(this._createGenericColumnOptionsGroup());
         this._setSelectGroupErrorBars(select_options);
+    }
+
+    handleArithmeticColumnChangeEvent(event) {
+        //this._setSelectAxis()
     }
 
     _setContainer() {
@@ -290,6 +307,21 @@ export class SettingsComponent extends HTMLElement {
         });
 
         return opt_group
+    }
+
+    _createGenericColumnOptionsGroup() {
+        let opt_group = document.createElement("optgroup");
+        opt_group.label = "Genereic columns";
+        opt_group.className += "generic";
+
+        let option = document.createElement("option");
+
+        option.text = 'None';
+        option.value = `none`;
+
+        opt_group.appendChild(option);
+
+        return opt_group;
     }
 
     _setSelectAxis(columns) {
@@ -448,6 +480,117 @@ export class SettingsComponent extends HTMLElement {
         });
     }
 
+    _setSelectAxisListener() {
+        let select_axis_x = document.getElementById(SettingsComponent.select_axis_x_id);
+        let select_axis_y = document.getElementById(SettingsComponent.select_axis_y_id);
+
+        let select_error_bar_x = document.getElementById(SettingsComponent.select_error_bar_x_id);
+        let select_error_bar_y = document.getElementById(SettingsComponent.select_error_bar_y_id);
+
+        select_axis_x.addEventListener('change', (e) => {
+            let column_id = e.target.value;
+
+            let data_type = document.getElementById(SettingsComponent.select_data_type_id).value;
+
+            if(data_type === 'light-curve') {
+
+                let column_descriptor = ColumnUtils.getColumnSettings(column_id)
+
+                let file_object = FileRegistry.getFileById(column_descriptor.file_id);
+
+                let frw = WrapperContainer.getFITSReaderWrapper();
+                frw.setFile(file_object.file);
+
+                let columns_name= frw.getAllColumns();
+
+                if(column_descriptor.column_name.toUpperCase() === 'RATE' &&
+                    columns_name.some(column => {
+                        return column.name.toUpperCase() === 'ERROR' && parseInt(column.hdu_index) === parseInt(column_descriptor.hdu_index)
+                    })) {
+
+                    Array.from(select_error_bar_x.options).forEach((option) => {
+                        let option_column_descriptor = ColumnUtils.getColumnSettings(option.value);
+
+                        if(option_column_descriptor.file_id === column_descriptor.file_id &&
+                            option_column_descriptor.hdu_index === column_descriptor.hdu_index &&
+                            option_column_descriptor.column_name.toUpperCase() === 'ERROR')
+
+                            select_error_bar_x.value = option.value;
+                    })
+                }
+
+                if(column_descriptor.column_name.toUpperCase() === 'TIME' &&
+                    columns_name.some(column => {
+                        return column.name.toUpperCase() === 'TIMEDEL' && parseInt(column.hdu_index) === parseInt(column_descriptor.hdu_index)
+                    })) {
+
+                    Array.from(select_error_bar_x.options).forEach((option) => {
+                        let option_column_descriptor = ColumnUtils.getColumnSettings(option.value);
+
+                        if (option_column_descriptor.file_id === column_descriptor.file_id &&
+                            option_column_descriptor.hdu_index === column_descriptor.hdu_index &&
+                            option_column_descriptor.column_name.toUpperCase() === 'TIMEDEL')
+
+                            select_error_bar_x.value = option.value;
+                    })
+                }
+            }
+
+        })
+
+        select_axis_y.addEventListener('change', (e) => {
+            let column_id = e.target.value;
+
+            let data_type = document.getElementById(SettingsComponent.select_data_type_id).value;
+
+            if(data_type === 'light-curve') {
+
+                let column_descriptor= ColumnUtils.getColumnSettings(column_id)
+
+                let file_object = FileRegistry.getFileById(column_descriptor.file_id);
+
+                let frw= WrapperContainer.getFITSReaderWrapper();
+                frw.setFile(file_object.file);
+
+                let columns_name= frw.getAllColumns();
+
+                if(column_descriptor.column_name.toUpperCase() === 'RATE' &&
+                    columns_name.some(column => {
+                        return column.name.toUpperCase() === 'ERROR' && parseInt(column.hdu_index) === parseInt(column_descriptor.hdu_index)
+                    })) {
+
+                    Array.from(select_error_bar_y.options).forEach((option) => {
+                        let option_column_descriptor = ColumnUtils.getColumnSettings(option.value);
+
+                        if(option_column_descriptor.file_id === column_descriptor.file_id &&
+                            option_column_descriptor.hdu_index === column_descriptor.hdu_index &&
+                            option_column_descriptor.column_name.toUpperCase() === 'ERROR')
+
+                            select_error_bar_y.value = option.value;
+                    })
+                }
+
+                if(column_descriptor.column_name.toUpperCase() === 'TIME' &&
+                    columns_name.some(column => {
+                        return column.name.toUpperCase() === 'TIMEDEL' && parseInt(column.hdu_index) === parseInt(column_descriptor.hdu_index)
+                    })) {
+
+                    Array.from(select_error_bar_y.options).forEach((option) => {
+                        let option_column_descriptor = ColumnUtils.getColumnSettings(option.value);
+
+                        if (option_column_descriptor.file_id === column_descriptor.file_id &&
+                            option_column_descriptor.hdu_index === column_descriptor.hdu_index &&
+                            option_column_descriptor.column_name.toUpperCase() === 'TIMEDEL')
+
+                            select_error_bar_y.value = option.value;
+                    })
+                }
+            }
+
+        })
+
+    }
+
     _setCalculationRadioListeners() {
         let radio_buttons = document.querySelectorAll('.' + SettingsComponent.calculation_radio_class);
         radio_buttons.forEach(radio_button => {
@@ -526,8 +669,17 @@ export class SettingsComponent extends HTMLElement {
             if(values['has-error-bars-checkbox'].checked === true) {
                 let error_bars = {};
 
-                error_bars.x = values['select-axis-x-error-bar'].value;
-                error_bars.y = values['select-axis-y-error-bar'].value;
+                if(values['select-axis-x-error-bar'] !== undefined) {
+                    error_bars.x = values['select-axis-x-error-bar'].value;
+                } else {
+                    delete error_bars.x
+                }
+
+                if(values['select-axis-y-error-bar'] !== undefined) {
+                    error_bars.y = values['select-axis-y-error-bar'].value;
+                } else {
+                    delete error_bars.y
+                }
 
                 this.settings_object.setErrorBarsSettings(error_bars);
             }

@@ -1,6 +1,7 @@
 import {WrapperContainer} from "../../containers/WrapperContainer";
 import {FileRegistry} from "../../registries/FileRegistry";
 import {FileRegistryChangeEvent} from "../../events/FileRegistryChangeEvent";
+import {RegistryContainer} from "../../containers/RegistryContainer";
 
 export class FITSSettingsComponent extends HTMLElement {
 
@@ -14,6 +15,11 @@ export class FITSSettingsComponent extends HTMLElement {
 
     add_to_plot_btn_id = "add-to-plot";
     remove_from_plot_btn_id = "remove-from-plot";
+    save_btn_id = 'save-file-settings';
+
+    product_type_select_id = 'product-type-select';
+    arf_file_select_id = 'arf-file-select';
+    rmf_file_select_id = 'rmf-file-select';
 
     container = '<div id="fits-settings-container" class="full-width-column" style="grid-column: 1 / span 2;">' +
         '<div class="card">' +
@@ -76,6 +82,13 @@ export class FITSSettingsComponent extends HTMLElement {
             '                            <div class="card">\n' +
             '                                <div class="card-header">File settings</div>\n' +
             '                                <div class="card-body">\n' +
+            ' <!--label for="product-type-select">Product type :</label>' +
+            ' <select id="product-type-select" class="form-select"><option selected="selected" value="none">None</option><option value="lightcurve">Light Curve</option><option value="spectrum">Spectrum</option></select> ' +
+            ' <label for="product-type-select" class="spectrum-settings">ARF file : </label>' +
+            ' <select id="arf-file-select" class="form-select spectrum-settings"></select>' +
+            ' <label for="product-type-select" class="spectrum-settings">RMF file :</label>' +
+            ' <select id="rmf-file-select" class="form-select spectrum-settings"></select>' +
+            ' <label for="select-hdu-file">HDU :</label-->' +
             '                                    <select id="select-hdu-file" class="form-select">\n' +
             '\n' +
             '                                    </select>\n' +
@@ -122,7 +135,7 @@ export class FITSSettingsComponent extends HTMLElement {
             '                                        </div>\n' +
             '                                    </div>\n' +
             '\n' +
-            '                                    <!-- button class="btn btn-success" id="save-file-settings">Save changes</button -->\n' +
+            '                                    <button class="btn btn-success" id="save-file-settings">Save changes</button>\n' +
             '                                    <button class="btn btn-primary" id="add-to-plot">Add to plot</button>\n' +
             '                                    <button class="btn btn-danger" id="remove-from-plot">Remove from plot</button>\n' +
             '                                </div>\n' +
@@ -134,6 +147,7 @@ export class FITSSettingsComponent extends HTMLElement {
     setupComponent() {
         this.setHDUSelect();
         this.setupActionButtons();
+        this.setProductSettings();
 
         let select_hdu = document.getElementById(this.select_hdu_id);
         let hdu_index = select_hdu.value;
@@ -172,6 +186,10 @@ export class FITSSettingsComponent extends HTMLElement {
 
     setupInnerElementListeners() {
         this.setHDUSelectListener();
+        this.setSaveButtonListener();
+        //this.setProductTypeSelectListener();
+        //this.setARFFileSelectListener();
+        //this.setRMFFileSelectListener();
     }
 
     setupActionButtons() {
@@ -193,7 +211,12 @@ export class FITSSettingsComponent extends HTMLElement {
             this.is_current = true;
 
             let frce = new FileRegistryChangeEvent();
-            frce.dispatchToSubscribers();
+
+            try {
+                frce.dispatchToSubscribers();
+            } catch(e) {
+                console.log("No subsribers for event : " + FileRegistryChangeEvent.name);
+            }
 
             this.resetContainerForCurrentFile();
 
@@ -205,10 +228,29 @@ export class FITSSettingsComponent extends HTMLElement {
             this.is_current = false;
 
             let frce = new FileRegistryChangeEvent();
-            frce.dispatchToSubscribers();
+
+            try {
+                frce.dispatchToSubscribers();
+            } catch(e) {
+                console.log("No subscribers for specified event : " + FileRegistryChangeEvent.name);
+            }
 
             this.resetContainerForCurrentFile();
         });
+    }
+
+    setProductSettings() {
+        let product_type = null;
+        let rmf_file = null;
+        let arf_file = null;
+
+        if(this.file.product_type) product_type = this.file.product_type;
+        if(this.file.rmf_file) rmf_file = this.file.rmf_file;
+        if(this.file.arf_file) arf_file = this.file.arf_file;
+
+        //this.setProductTypeSelect(product_type);
+        //this.setRMFFileSelect(rmf_file);
+        //this.setARFFileSelect(arf_file);
     }
 
     setTables(hdu_index) {
@@ -294,8 +336,149 @@ export class FITSSettingsComponent extends HTMLElement {
 
     }
 
+    setSaveButtonListener() {
+        let save_settings_btn = document.getElementById(this.save_btn_id);
+
+        save_settings_btn.addEventListener('click', (event) => {
+            let product_type_select = document.getElementById(this.product_type_select_id);
+
+            if(product_type_select.value === 'spectrum') {
+                let rmf_file_select = document.getElementById(this.rmf_file_select_id);
+                let arf_file_select = document.getElementById(this.arf_file_select_id);
+
+                let rmf_file_id = rmf_file_select.value;
+                let arf_file_id = arf_file_select.value;
+
+                FileRegistry.setFileMetadata(this.file.id, {
+                    rmf_file: rmf_file_id,
+                    arf_file: arf_file_id
+                });
+            }
+
+        })
+
+    }
+
+    setProductTypeSelect(value = null) {
+        let product_type_select = document.getElementById(this.product_type_select_id);
+
+        if(value) {
+            product_type_select.value = 'none';
+        } else {
+            product_type_select.value = value;
+        }
+    }
+
+    setProductTypeSelectListener() {
+        let product_type_select = document.getElementById(this.product_type_select_id);
+
+        product_type_select.addEventListener('change', (event) => {
+            if(product_type_select.value === 'spectrum') {
+                this.setProductSettingsVisibility('spectrum');
+            } else if(product_type_select.value === 'lightcurve') {
+                this.setProductSettingsVisibility('lightcurve');
+            } else {
+                this.setProductSettingsVisibility();
+            }
+        })
+
+    }
+
+    setRMFFileSelect(value = null) {
+        let rmf_file_select = document.getElementById(this.rmf_file_select_id);
+
+        let file_options = this.getFilesOptionsList();
+
+        file_options.forEach((option) => {
+            rmf_file_select.appendChild(option)
+        });
+
+        if(!value) {
+            rmf_file_select.value = 'none';
+        } else {
+            rmf_file_select.value = value;
+        }
+    }
+
+    setRMFFileSelectListener() {
+        let rmf_file_select = document.getElementById(this.rmf_file_select_id);
+
+    }
+
+    setARFFileSelect(value = null) {
+        let arf_file_select = document.getElementById(this.arf_file_select_id);
+
+        let file_options = this.getFilesOptionsList();
+
+        file_options.forEach((option) => {
+            arf_file_select.appendChild(option)
+        });
+
+        if(!value) {
+            arf_file_select.value = 'none';
+        } else {
+            arf_file_select.value = value;
+        }
+    }
+
+    setARFFileSelectListener() {
+        let arf_file_select = document.getElementById(this.arf_file_select_id);
+
+    }
+
+    setProductSettingsVisibility(settings = null) {
+        let rmf_file_select = document.getElementById(this.rmf_file_select_id);
+        let arf_file_select = document.getElementById(this.arf_file_select_id);
+
+        rmf_file_select.style.display = 'none';
+        arf_file_select.style.display = 'none';
+
+        let spectrum_elements = document.getElementsByClassName('spectrum-settings');
+
+        for (let i = 0; i < spectrum_elements.length; i++) {
+            spectrum_elements[i].style.display = 'none';
+        }
+
+        if(!settings) {
+
+        } else if(settings === 'spectrum') {
+            rmf_file_select.style.display = 'block';
+            arf_file_select.style.display = 'block';
+
+            for (let i = 0; i < spectrum_elements.length; i++) {
+                spectrum_elements[i].style.display = 'block';
+            }
+        } else if(settings === 'lightcurve') {
+
+        }
+    }
+
     resetContainerForCurrentFile() {
         this.setupComponent();
     }
 
+    getFilesOptionsList() {
+        let file_options = [];
+        let file_list = FileRegistry.getAllFiles();
+
+        let option = document.createElement("option");
+
+        option.setAttribute('selected', 'true');
+
+        option.value = 'none';
+        option.text = 'None';
+
+        file_options.push(option);
+
+        file_list.forEach((file) => {
+            option = document.createElement("option");
+
+            option.value = file.id;
+            option.text = file.file_name;
+
+            file_options.push(option);
+        })
+
+        return file_options;
+    }
 }

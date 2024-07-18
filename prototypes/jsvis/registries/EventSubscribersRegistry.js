@@ -6,8 +6,9 @@ export class EventSubscribersRegistry {
         'fits-loaded': ['settings-component', 'file-component'],
         'configuration': ['settings-component'],
         'file-loaded': ['file-component'],
-        'file-selected': ['settings-component'],
-        'file-registry-change': ['settings-component', 'file-component']
+        'file-selected': ['settings-component', 'arithmetic-column-component'],
+        'file-registry-change': ['settings-component', 'file-component', 'arithmetic-column-component'],
+        //'arithmetic-column-change': ['settings-component']
     }
 
     constructor() {

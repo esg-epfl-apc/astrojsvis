@@ -271,7 +271,6 @@ export class FileComponent extends HTMLElement {
 
     handleSelectChangeEvent(event) {
         event.stopPropagation();
-
     }
 
     _setContainer() {
