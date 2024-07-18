@@ -34,6 +34,10 @@ export class FileRegistry {
         FileRegistry.file_counter++;
     }
 
+    static _addToAvailableFiles(file) {
+        FileRegistry.available_files.push(file);
+    }
+
     static moveToAvailableFiles(file) {
         FileRegistry.available_files.push(file);
     }
@@ -52,6 +56,15 @@ export class FileRegistry {
 
         FileRegistry.current_files = FileRegistry.current_files.filter(file => file.id !== parseInt(file_id));
         FileRegistry.moveToAvailableFiles(file);
+    }
+
+    static getAllFiles() {
+        let available_files = FileRegistry.getAvailableFilesList();
+        let current_files = FileRegistry.getCurrentFilesList();
+
+        let files = available_files.concat(current_files);
+
+        return files;
     }
 
     static getFileById(file_id) {
@@ -76,6 +89,22 @@ export class FileRegistry {
         }
 
         return is_current;
+    }
+
+    static setFileMetadata(file_id, metadata) {
+        let files = FileRegistry.getAllFiles();
+
+        let file = files.filter(file => file.id !== parseInt(file_id));
+
+        file = { ...file, ...metadata };
+
+        if(FileRegistry.isFileCurrent(file_id)) {
+            FileRegistry.removeFromCurrentFiles(file_id);
+            FileRegistry.addToCurrentFiles(file);
+        } else {
+            FileRegistry.removeFromAvailableFiles(file_id);
+            FileRegistry._addToAvailableFiles(file);
+        }
     }
 
     static sendRegistryChangeEvent() {

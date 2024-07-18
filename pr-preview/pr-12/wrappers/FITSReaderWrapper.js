@@ -14,6 +14,7 @@ export class FITSReaderWrapper {
 
     constructor(file_path = null) {
         if(file_path) {
+            console.log(file_path);
             if (FITSReaderWrapper.is_path_valid(file_path)) {
                 this.file_path = file_path;
                 this._getFile()
@@ -67,6 +68,12 @@ export class FITSReaderWrapper {
 
     setFile(file) {
         this.file = file;
+    }
+
+    setFileFromFileObject(file_object) {
+        this.file = file_object.file;
+        this.arf_file = file_object.arf_file_id;
+        this.rmf_file = file_object.rmf_file_id;
     }
 
     getHDU(hdu_index) {
@@ -340,6 +347,15 @@ export class FITSReaderWrapper {
                         frw.setFile(ancrfile.file);
                     }
 
+                } else if(this.arf_file) {
+
+                    let ancrfile = FileRegistry.getFileById(this.arf_file);
+
+                    if(ancrfile !== undefined) {
+                        let frw = new FITSReaderWrapper();
+                        frw.setFile(ancrfile.file);
+                    }
+
                 }
 
                 if(hdu.header.get('RESPFILE') !== null) {
@@ -395,8 +411,59 @@ export class FITSReaderWrapper {
                         })
 
                     }
-                }
 
+                } else if(this.rmf_file) {
+                    let respfile = FileRegistry.getFileById(this.rmf_file);
+
+                    if(respfile !== undefined) {
+                        let frw = new FITSReaderWrapper();
+
+                        frw.setFile(respfile.file);
+
+                        let hdus_index = frw.getTabularHDUs();
+
+                        let has_e_min_max = false;
+                        hdus_index.forEach((hdu_index) => {
+                            let columns_name = frw.getColumnsNameFromHDU(hdu_index);
+                            if (columns_name.includes("E_MIN") && columns_name.includes("E_MAX")) {
+                                has_e_min_max = true;
+                                let e_min_max_hdus_index = hdu_index;
+
+                                let column = {
+                                    name: 'E_HALF_WIDTH',
+                                    hdu_index: hdu_index,
+                                    is_from_header: false,
+                                    is_processed: true,
+                                    from_file: respfile.id
+                                }
+
+                                columns.push(column);
+
+                                column = {
+                                    name: 'E_MID',
+                                    hdu_index: hdu_index,
+                                    is_from_header: false,
+                                    is_processed: true,
+                                    from_file: respfile.id
+                                }
+
+                                columns.push(column);
+
+                                column = {
+                                    name: 'E_MID_LOG',
+                                    hdu_index: hdu_index,
+                                    is_from_header: false,
+                                    is_processed: true,
+                                    from_file: respfile.id
+                                }
+
+                                columns.push(column);
+
+                            }
+                        })
+
+                    }
+                }
             }
         })
 

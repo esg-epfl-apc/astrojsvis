@@ -105,8 +105,13 @@ export class D3Wrapper {
             axis = {x: processed_data.axis[0].column_name, y: processed_data.axis[1].column_name};
 
             if(has_error_bars) {
-                error_bars = {x: processed_data.error_bars[0].column_name, y: processed_data.error_bars[1].column_name};
-                error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars)
+                let error_bars_object = {};
+
+                processed_data.error_bars.forEach((error_bar) => {
+                    error_bars_object[error_bar.axis] = error_bar.column_name;
+                })
+
+                error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars_object)
             }
 
             if(ranges != null) {

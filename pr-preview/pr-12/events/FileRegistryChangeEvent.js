@@ -1,10 +1,11 @@
 import {RegistryContainer} from "../containers/RegistryContainer";
+import {NoEventSubscriberError} from "../errors/NoEventSubscriberError";
 
 export class FileRegistryChangeEvent {
 
     static defaultOptions = {
         bubbles: true,
-        composed: false
+        composed: true
     };
 
     static name = "file-registry-change";
@@ -41,9 +42,15 @@ export class FileRegistryChangeEvent {
         let subscribers_id = esr.getSubscribersForEvent(FileRegistryChangeEvent.name);
 
         let subscriber_element = null;
-        subscribers_id.forEach((subscriber_id) => {
-            subscriber_element = document.getElementById(subscriber_id);
-            subscriber_element.dispatchEvent(this.event);
-        })
+        try {
+            subscribers_id.forEach((subscriber_id) => {
+                subscriber_element = document.getElementById(subscriber_id);
+                subscriber_element.dispatchEvent(this.event);
+            })
+        } catch(e) {
+            if(subscribers_id.length <= 0) {
+                throw new NoEventSubscriberError();
+            }
+        }
     }
 }

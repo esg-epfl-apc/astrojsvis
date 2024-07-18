@@ -15,7 +15,7 @@ module.exports = {
     devtool: 'inline-source-map',
     watch: true,
     watchOptions: {
-        aggregateTimeout: 600,
+        aggregateTimeout: 800,
         ignored: ['dist/**', '_vendors/**', '_test_files/**', '_old/**'],
     },
 };
