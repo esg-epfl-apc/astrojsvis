@@ -82,13 +82,13 @@ export class FITSSettingsComponent extends HTMLElement {
             '                            <div class="card">\n' +
             '                                <div class="card-header">File settings</div>\n' +
             '                                <div class="card-body">\n' +
-            ' <!--label for="product-type-select">Product type :</label>' +
+            ' <label for="product-type-select">Product type :</label>' +
             ' <select id="product-type-select" class="form-select"><option selected="selected" value="none">None</option><option value="lightcurve">Light Curve</option><option value="spectrum">Spectrum</option></select> ' +
             ' <label for="product-type-select" class="spectrum-settings">ARF file : </label>' +
             ' <select id="arf-file-select" class="form-select spectrum-settings"></select>' +
             ' <label for="product-type-select" class="spectrum-settings">RMF file :</label>' +
             ' <select id="rmf-file-select" class="form-select spectrum-settings"></select>' +
-            ' <label for="select-hdu-file">HDU :</label-->' +
+            ' <label for="select-hdu-file">HDU :</label>' +
             '                                    <select id="select-hdu-file" class="form-select">\n' +
             '\n' +
             '                                    </select>\n' +
@@ -187,9 +187,9 @@ export class FITSSettingsComponent extends HTMLElement {
     setupInnerElementListeners() {
         this.setHDUSelectListener();
         this.setSaveButtonListener();
-        //this.setProductTypeSelectListener();
-        //this.setARFFileSelectListener();
-        //this.setRMFFileSelectListener();
+        this.setProductTypeSelectListener();
+        this.setARFFileSelectListener();
+        this.setRMFFileSelectListener();
     }
 
     setupActionButtons() {
@@ -248,9 +248,9 @@ export class FITSSettingsComponent extends HTMLElement {
         if(this.file.rmf_file) rmf_file = this.file.rmf_file;
         if(this.file.arf_file) arf_file = this.file.arf_file;
 
-        //this.setProductTypeSelect(product_type);
-        //this.setRMFFileSelect(rmf_file);
-        //this.setARFFileSelect(arf_file);
+        this.setProductTypeSelect(product_type);
+        this.setRMFFileSelect(rmf_file);
+        this.setARFFileSelect(arf_file);
     }
 
     setTables(hdu_index) {

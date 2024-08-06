@@ -4,6 +4,7 @@ import {FileRegistry} from "../registries/FileRegistry";
 export class RegistryContainer {
 
     static file_registry = null;
+    static column_registry = null;
 
     constructor() {
 
@@ -23,6 +24,14 @@ export class RegistryContainer {
 
     static getRegistryContainer() {
         return new RegistryContainer();
+    }
+
+    static setCustomColumnRegistry(column_registry) {
+        RegistryContainer.column_registry = column_registry;
+    }
+
+    static getCustomColumnRegistry() {
+        return RegistryContainer.column_registry;
     }
 
 }

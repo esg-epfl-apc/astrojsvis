@@ -13,6 +13,7 @@ import { BokehGraph } from "./visualizations/BokehGraph";
 import {FileRegistry} from "./registries/FileRegistry";
 import {RegistryContainer} from "./containers/RegistryContainer";
 import {ArithmeticColumnInput} from "./components/inputs/ArithmeticColumnInput";
+import {CustomColumnRegistry} from "./registries/CustomColumnRegistry";
 
 let file_path = window.location.href + "_test_files/spiacs_lc_query.fits";
 
@@ -30,6 +31,7 @@ VisualizationContainer.setBokehVisualization(new BokehGraph());
 VisualizationContainer.setD3Visualization(new D3Graph());
 
 RegistryContainer.setFileRegistry(new FileRegistry());
+RegistryContainer.setCustomColumnRegistry(new CustomColumnRegistry());
 
 customElements.define('file-component', FileComponent);
 customElements.define('settings-component', SettingsComponent);

@@ -2,6 +2,8 @@ import {WrapperContainer} from "../containers/WrapperContainer";
 import {FileRegistry} from "../registries/FileRegistry";
 import {SpectrumProcessor} from "./SpectrumProcessor";
 import {DataProcessorContainer} from "../containers/DataProcessorContainer";
+import {ExpressionParser} from "../utils/ExpressionParser";
+import {ColumnUtils} from "../utils/ColumnUtils";
 
 export class DataPreProcessor {
 
@@ -12,25 +14,71 @@ export class DataPreProcessor {
     getProcessedDataset(dataset_settings_object) {
         let dataset = {};
 
-        dataset_settings_object.axis.forEach((axis) => {
+        console.log('DATAPREPROCESSOR');
+        console.log(dataset_settings_object);
 
-            let file_object = FileRegistry.getFileById(axis.file_id);
+        dataset_settings_object.axis.forEach((axis) => {
+            console.log("AXIS");
+            console.log(axis.file_id);
 
             let frw = WrapperContainer.getFITSReaderWrapper();
-            frw.setFile(file_object.file);
+
+            if(axis.file_id != null) {
+                let file_object = FileRegistry.getFileById(axis.file_id);
+
+                //let frw = WrapperContainer.getFITSReaderWrapper();
+                frw.setFile(file_object.file);
+            }
 
             let column_data;
 
             if(dataset_settings_object.data_type.type === 'spectrum' &&
                 SpectrumProcessor.processed_columns_name.includes(axis.column_name)) {
 
-                column_data = this.getSpectrumProcessedColumn(axis.hdu_index, axis.column_name, frw)
+                column_data = this.getSpectrumProcessedColumn(axis.hdu_index, axis.column_name, frw);
+            } else if(axis.column_type === 'processed') {
+                let column_array = [];
+                let temp_column_data = [];
+
+                console.log("Custom Column");
+                console.log(axis);
+
+                let expression_array = this.parseColumnsExpression(axis.column_expression);
+                let operator_array = this.parseColumnsOperators(axis.column_expression);
+
+                expression_array.forEach((operand) => {
+                    column_array.push(ColumnUtils.getColumnSettings(operand));
+                });
+
+                console.log(column_array);
+
+                let frw = WrapperContainer.getFITSReaderWrapper();
+
+                column_array.forEach((column) => {
+                    console.log(column);
+                    let col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
+
+                    temp_column_data.push(col_data);
+                    console.log(temp_column_data);
+                })
+
+                let processed_data = this.getCustomColumnProcessedData(temp_column_data, operator_array);
+
+                console.log(this.getCustomColumnProcessedData(temp_column_data, operator_array));
+                console.log(processed_data);
+
+                column_data = processed_data;
+
             } else {
                 column_data = frw.getColumnDataFromHDU(axis.hdu_index, axis.column_name);
+                console.log(column_data);
             }
+
+            console.log(column_data);
 
             axis.data = column_data;
 
+            console.log(axis.data);
         })
 
         if(dataset_settings_object.hasOwnProperty('error_bars')) {
@@ -62,13 +110,20 @@ export class DataPreProcessor {
             })
         }
 
+        console.log(dataset_settings_object);
+
         dataset = dataset_settings_object;
+
+        console.log(dataset);
 
         return dataset;
     }
 
     datasetToJSONData(dataset_settings_object) {
         let rows = [];
+
+        console.log("JSON DATA");
+        console.log(dataset_settings_object);
 
         dataset_settings_object.axis.forEach((axis) => {
 
@@ -163,6 +218,41 @@ export class DataPreProcessor {
         return error_bars_object;
     }
 
+    getProcessedColumnData(file_id, hdu_index, column_name, fits_reader_wrapper) {
+        let file_object = FileRegistry.getFileById(file_id);
+        fits_reader_wrapper.setFile(file_object.file);
+
+        let col_data = fits_reader_wrapper.getColumnDataFromHDU(hdu_index, column_name);
+
+        return col_data;
+    }
+
+    getCustomColumnProcessedData(operands, operators) {
+        let data = [];
+
+        console.log(operands);
+        console.log(operators);
+
+        let expression_string;
+        for(let i = 0; i < operands[0].length; i++) {
+            expression_string = '';
+
+            expression_string += operands[0][i];
+
+            operators.forEach((operator, index) => {
+                expression_string += operator + operands[index + 1][i];
+            })
+
+            data.push(eval(expression_string));
+
+        }
+
+        console.log(expression_string);
+        console.log(data);
+
+        return data;
+    }
+
     getSpectrumProcessedColumn(hdu_index, column_name, fits_reader_wrapper) {
         let processed_column = [];
 
@@ -176,6 +266,25 @@ export class DataPreProcessor {
         })
 
         return processed_column;
+    }
+
+    parseColumnsExpression(expression) {
+        let expression_parser = new ExpressionParser();
+
+        let columns_array = expression_parser.parseStandardExpressionOperand(expression);
+
+        console.log("Expression parsing")
+        console.log(columns_array);
+
+        return columns_array;
+    }
+
+    parseColumnsOperators(expression) {
+        let expression_parser = new ExpressionParser();
+
+        let operators_array = expression_parser.parseStandardExpressionOperators(expression);
+
+        return operators_array;
     }
 
     processDataForRange(ranges, data, error_bars = null) {

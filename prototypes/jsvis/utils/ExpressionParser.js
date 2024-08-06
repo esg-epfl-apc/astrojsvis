@@ -24,6 +24,24 @@ export class ExpressionParser {
         this.expression = expression;
     }
 
+    parseStandardExpressionOperand(expression) {
+        const operator_regex = /[\+\-\*\/]/g;
+
+        let parts = expression.split(operator_regex);
+
+        let filtered_parts = parts.filter(part => part.trim() !== '');
+
+        return filtered_parts;
+    }
+
+    parseStandardExpressionOperators(expression) {
+        const operator_regex = /[\+\-\*\/]/g;
+
+        const operators = expression.match(operator_regex);
+
+        return operators;
+    }
+
     parseExpression() {
         if(this.expression) {
 

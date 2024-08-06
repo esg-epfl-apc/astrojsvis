@@ -6,6 +6,7 @@ import {WrapperContainer} from "../containers/WrapperContainer";
 import {ColumnUtils} from "../utils/ColumnUtils";
 import {RegistryContainer} from "../containers/RegistryContainer";
 import {FileRegistryChangeEvent} from "../events/FileRegistryChangeEvent";
+import {CustomColumnRegistry} from "../registries/CustomColumnRegistry";
 
 export class SettingsComponent extends HTMLElement {
 
@@ -232,7 +233,10 @@ export class SettingsComponent extends HTMLElement {
     }
 
     handleArithmeticColumnChangeEvent(event) {
-        //this._setSelectAxis()
+        let columns_opt_groups = this._createColumnsOptGroups();
+        console.log(columns_opt_groups);
+        this._setSelectGroupAxis(columns_opt_groups);
+        //console.log(event);
     }
 
     _setContainer() {
@@ -309,9 +313,9 @@ export class SettingsComponent extends HTMLElement {
         return opt_group
     }
 
-    _createGenericColumnOptionsGroup() {
+    _createGenericColumnOptionsGroup(is_axis = false) {
         let opt_group = document.createElement("optgroup");
-        opt_group.label = "Genereic columns";
+        opt_group.label = "Generic columns";
         opt_group.className += "generic";
 
         let option = document.createElement("option");
@@ -319,7 +323,23 @@ export class SettingsComponent extends HTMLElement {
         option.text = 'None';
         option.value = `none`;
 
-        opt_group.appendChild(option);
+        if(!is_axis) {
+            opt_group.appendChild(option);
+        }
+
+        let custom_columns = CustomColumnRegistry.getAvailableColumnsList();
+
+        if(custom_columns.length > 0) {
+            custom_columns.forEach((custom_column) => {
+                option = document.createElement("option");
+                option.text = custom_column.expression;
+                option.value = custom_column.expression;
+
+                option.setAttribute("data-column-type", "processed");
+
+                opt_group.appendChild(option);
+            })
+        }
 
         return opt_group;
     }
@@ -424,6 +444,63 @@ export class SettingsComponent extends HTMLElement {
         })
 
         return options;
+    }
+
+    _createColumnsOptGroups() {
+
+        let current_file_list = FileRegistry.getCurrentFilesList();
+        let columns = [];
+
+        current_file_list.forEach((file) => {
+
+            if(file.type === 'fits') {
+                let fits_reader_wrapper = WrapperContainer.getFITSReaderWrapper();
+
+                if(file.product_type !== 'spectrum') {
+                    fits_reader_wrapper.setFile(file.file);
+                } else {
+                    fits_reader_wrapper.setFileFromFileObject(file);
+                }
+
+                let fits_columns = fits_reader_wrapper.getAllColumns();
+
+                fits_columns.forEach((fits_column) => {
+                    let column = {...fits_column, file_id: file.id};
+                    columns.push(column);
+                })
+
+            } else if(file.type === 'csv') {
+
+            }
+        })
+
+        let columns_by_file = columns.reduce((acc, column) => {
+            if (!acc[column.file_id]) {
+                acc[column.file_id] = [];
+            }
+            acc[column.file_id].push(column);
+            return acc;
+        }, {});
+
+        let select_options = [];
+
+        let i = 1;
+        for (let file_id in columns_by_file) {
+            if (columns_by_file.hasOwnProperty(file_id)) {
+                let file = FileRegistry.getFileById(file_id);
+                let file_name = file.file_name;
+
+                let frw = WrapperContainer.getFITSReaderWrapper();
+                frw.setFile(file.file);
+
+                select_options.push(this._createFileColumnsOptionsGroup(columns_by_file[file_id], file_name, 'opt-group', frw));
+            }
+            i++;
+        }
+
+        select_options.unshift(this._createGenericColumnOptionsGroup(true));
+
+        return select_options;
     }
 
     _setSelectLibraryListener() {
@@ -653,15 +730,34 @@ export class SettingsComponent extends HTMLElement {
 
         if(values['select-axis-x'] && values['select-axis-y']) {
             let axis = {};
+            let columns = {};
+            columns.x = {};
+            columns.y = {};
             let scales = {};
+
+            console.log(values['select-axis-x']);
+
+            columns.x.column_type = 'standard';
+            columns.y.column_type = 'standard';
+
+            if(values['select-axis-x'].column_type === 'processed') {
+                columns.x.column_type = 'processed';
+            }
+
+            if(values['select-axis-y'].column_type === 'processed') {
+                columns.y.column_type = 'processed';
+            }
 
             axis.x = values['select-axis-x'].value;
             axis.y = values['select-axis-y'].value;
+
+            console.log(axis);
 
             scales.x = values['select-axis-x-scale'].value;
             scales.y = values['select-axis-y-scale'].value;
 
             this.settings_object.setAxisSettings(axis);
+            this.settings_object.setColumnsSettings(columns);
             this.settings_object.setScalesSettings(scales);
         }
 
@@ -724,8 +820,13 @@ export class SettingsComponent extends HTMLElement {
             let classes = select.className.split(' ');
             let value = select.value;
 
+            let selected_option = select.options[select.selectedIndex];
+
+            let column_type = "standard";
+            column_type = selected_option.dataset.columnType;
+
             if(window.getComputedStyle(select, null).getPropertyValue("display") !== 'none' && value !== 'none') {
-                form_values[id] = {classes, value};
+                form_values[id] = {classes, value, column_type};
             }
         });
 

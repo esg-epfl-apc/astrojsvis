@@ -14,6 +14,7 @@ export class VisualizationSettings {
     settings_data_type = null;
     settings_hdus = null;
     settings_axis = null;
+    settings_columns = null;
     settings_scales = null;
     settings_error_bars = null;
 
@@ -76,6 +77,18 @@ export class VisualizationSettings {
     getAxisSettings() {
         if(this.settings_axis) {
             return this.settings_axis;
+        } else {
+            return null;
+        }
+    }
+
+    setColumnsSettings(columns) {
+        this.settings_columns = columns;
+    }
+
+    getColumnsSettings() {
+        if(this.settings_columns) {
+            return this.settings_columns;
         } else {
             return null;
         }
