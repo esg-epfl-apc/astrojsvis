@@ -8,7 +8,7 @@ export class EventSubscribersRegistry {
         'file-loaded': ['file-component'],
         'file-selected': ['settings-component', 'arithmetic-column-component'],
         'file-registry-change': ['settings-component', 'file-component', 'arithmetic-column-component'],
-        //'arithmetic-column-change': ['settings-component']
+        'arithmetic-column-change': ['settings-component']
     }
 
     constructor() {

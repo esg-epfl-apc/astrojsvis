@@ -1,5 +1,8 @@
 import {FileRegistry} from "../../registries/FileRegistry";
 import {WrapperContainer} from "../../containers/WrapperContainer";
+import {RegistryContainer} from "../../containers/RegistryContainer";
+import {ArithmeticColumnChangeEvent} from "../../events/ArithmeticColumnChangeEvent";
+import {CustomColumnRegistry} from "../../registries/CustomColumnRegistry";
 
 export class ArithmeticColumnInput extends HTMLElement {
 
@@ -143,7 +146,21 @@ export class ArithmeticColumnInput extends HTMLElement {
                 break;
 
             case 'V':
+                let column = {
+                    expression: input_display.value
+                };
+
+                /*
+                let custom_column_registry = RegistryContainer.getCustomColumnRegistry();
+                custom_column_registry.addToAvailableColumns(column);
+                */
+
+                CustomColumnRegistry.addToAvailableColumns(column);
+
                 this.addColumnToDisplay(input_display.value);
+
+                let acce = new ArithmeticColumnChangeEvent();
+                acce.dispatchToSubscribers();
 
                 break;
 
@@ -235,7 +252,7 @@ export class ArithmeticColumnInput extends HTMLElement {
         let column_display = document.getElementById(ArithmeticColumnInput.column_display_id);
 
         let li_expression = document.createElement('li');
-        li_expression.innerHTML = expression+' <button class="btn btn-danger">X</button>';
+        li_expression.innerHTML = expression +' <button class="btn btn-danger">X</button>';
         li_expression.setAttribute('data-column', expression);
 
         column_display.appendChild(li_expression);
