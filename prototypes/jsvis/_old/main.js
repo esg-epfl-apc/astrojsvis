@@ -16,10 +16,8 @@ function getFile(file_path) {
 
 function readFile(arrayBuffer, file_path) {
     let fits_file = window.FITSReader.parseFITS(arrayBuffer);
-    console.log(fits_file);
 
     let hdu = fits_file.getHDU();
-    console.log(hdu);
 
     let header = hdu.header;
     let data = hdu.data;
@@ -63,9 +61,6 @@ function extractFormValues() {
         let classes = checkbox.className.split(' ');
         let checked = checkbox.checked;
 
-        console.log(id);
-        console.log(checked);
-
         if (id.includes('select-error-bar') && checked) {
             let correspondingSelect = document.querySelector(`#${id.replace('checkbox', 'select')}`);
             if (correspondingSelect) {
@@ -84,7 +79,6 @@ function setGenerateButtonListener() {
     let button_generate = document.getElementById('button-generate');
     button_generate.addEventListener('click', function() {
         let settings_data = extractFormValues();
-        console.log(settings_data);
 
         if(parseInt(settings_data['select-lib'].value) === 0) {
             createGraph0('graph-container1', fits_data_json, settings_data);
@@ -101,7 +95,6 @@ function setGenerateButtonListener() {
 function setHDUSelectListener() {
     let select_hdu = document.getElementById('select-hdus');
     select_hdu.addEventListener('change', function(e) {
-        console.log(e);
         let hdu_index = e.target.value;
 
         resetSettingsOptions();
@@ -117,7 +110,6 @@ function setHDUSelectListener() {
 function setHDUDataSelectListener() {
     let select_hdu = document.getElementById('select-data-hdus');
     select_hdu.addEventListener('change', function(e) {
-        console.log(e);
         let hdu_index = e.target.value
 
         getDataFromFITS(fits_data_file, hdu_index)
@@ -125,7 +117,6 @@ function setHDUDataSelectListener() {
 
     select_hdu = document.getElementById('select-header-hdus');
     select_hdu.addEventListener('change', function(e) {
-        console.log(e);
         let hdu_index = e.target.value
 
         getDataFromFITS(fits_data_file, hdu_index)

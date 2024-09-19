@@ -72,7 +72,7 @@ export class FITSSettingsComponent extends HTMLElement {
     btn_add_to_plot = '<button class="btn btn-primary" id="add-to-plot">Add to plot</button>;'
     btn_remove_from_plot = '<button class="btn btn-danger" id="remove-from-plot">Remove from plot</button>';
 
-    constructor(file, is_current) {
+    constructor(file = null, is_current = null) {
         super();
 
         this.file = file;
@@ -122,13 +122,13 @@ export class FITSSettingsComponent extends HTMLElement {
             '                                                <div class="card-body">\n' +
             '                                                    <div id="data-hdu-file" class="file-data-container">\n' +
             '<table id="table-data" class="table table-striped">' +
-                '    <thead>' +
-                '       <tr>' +
-                    '       </tr>' +
-                '    </thead>' +
-                '    <tbody class="table-group-divider">' +
-                '    </tbody>' +
-                '</table>'+
+            '    <thead>' +
+            '       <tr>' +
+            '       </tr>' +
+            '    </thead>' +
+            '    <tbody class="table-group-divider">' +
+            '    </tbody>' +
+            '</table>' +
             '                                                    </div>\n' +
             '                                                </div>\n' +
             '                                            </div>\n' +
@@ -141,6 +141,7 @@ export class FITSSettingsComponent extends HTMLElement {
             '                                </div>\n' +
             '                            </div>\n' +
             '                        </div>'
+
 
     }
 

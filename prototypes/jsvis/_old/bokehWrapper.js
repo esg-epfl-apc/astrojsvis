@@ -14,33 +14,13 @@ function createGraph(fits_file, settings) {
     let header = hdu.header;
     let data = hdu.data;
 
-    console.log(fits_file);
-    console.log(hdu);
-    console.log(data);
-
     let timedel = header.get('TIMEDEL');
-
-    console.log("HEADER");
-    console.log(header);
-
-    console.log("TIMEDEL");
-    console.log(timedel);
 
     let x, y, dy;
 
     let scales = null;
 
     if(settings) {
-        console.log("Axis");
-        console.log(settings['select-axis-x']);
-        console.log(settings['select-axis-y']);
-
-        console.log("Error bars");
-        console.log(settings['select-axis-x-error-bars']);
-        console.log(settings['select-axis-y-error-bars']);
-
-        console.log(settings['select-axis-x']);
-        console.log(settings['select-axis-y']);
 
         let x_column = settings['select-axis-x'].value;
         let y_column = settings['select-axis-y'].value;
@@ -79,8 +59,6 @@ function createGraph(fits_file, settings) {
 
 function plot_light_curve(x, y, dy, timedel, labels, scales = null) {
     const plt = Bokeh.Plotting;
-
-    console.log("TIMEDEL plot :" + timedel);
 
     let ylow = [], yup = [], xlow = [], xup = [];
     for (let i in dy) {

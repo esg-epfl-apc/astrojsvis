@@ -25,10 +25,15 @@ export class D3Wrapper {
     configuration_object = null;
 
     constructor(container_id = D3Wrapper.container_id) {
-        this._setupListeners();
+        //this._setupListeners();
 
         this.container_id = container_id;
+        //this._setContainer();
+    }
+
+    setup() {
         this._setContainer();
+        this._setupListeners();
     }
 
     _setupListeners() {
@@ -55,9 +60,6 @@ export class D3Wrapper {
 
     handleVisualizationGenerationEvent(event) {
 
-        console.log("Graph generation");
-        console.log(event);
-
         this.settings_object = event.detail.settings_object;
 
         let library_settings = this.settings_object.getLibrarySettings();
@@ -79,36 +81,24 @@ export class D3Wrapper {
 
             dataset_settings.data_type = data_type;
 
-            console.log("COLUMNS");
-            console.log(columns);
-            console.log(axis);
-
             let axis_settings = [];
             for(let axis_column in axis) {
-
-                console.log(columns[axis_column]);
 
                 let axis_column_object;
 
                 if(columns[axis_column].column_type === 'standard') {
-                    console.log("Standard");
                     axis_column_object = this._getColumnSettings(axis[axis_column]);
                     axis_column_object = {...axis_column_object, ...columns[axis_column], ...{axis: axis_column}}
                 } else if(columns[axis_column].column_type === 'processed') {
-                    console.log("Custom column settings object");
                     axis_column_object = this._getCustomColumnSettings(axis[axis_column]);
                     axis_column_object = {...axis_column_object, ...columns[axis_column], ...{axis: axis_column}}
                 } else {
-                    console.log("Default");
                     axis_column_object = this._getColumnSettings(axis[axis_column]);
                     axis_column_object = {...axis_column_object, ...columns[axis_column], ...{axis: axis_column}}
                 }
 
                 axis_settings.push(axis_column_object);
             }
-
-            console.log("AXIS SETTINGS");
-            console.log(axis_settings);
 
             dataset_settings.axis = axis_settings;
 
@@ -129,8 +119,6 @@ export class D3Wrapper {
             let dpp = DataProcessorContainer.getDataProcessorContainer().getDataPreProcessor();
 
             let processed_data = dpp.getProcessedDataset(dataset_settings);
-
-            console.log(processed_data);
 
             let processed_json_data = dpp.datasetToJSONData(processed_data);
 
@@ -161,8 +149,13 @@ export class D3Wrapper {
 
             let visualization = VisualizationContainer.getD3Visualization();
 
-            visualization.initializeSettings(processed_json_data, axis, scales, error_bars, false, null);
-            visualization.initializeGraph();
+            try {
+                visualization.initializeSettings(processed_json_data, axis, scales, error_bars, false, null);
+                visualization.initializeGraph();
+            } catch(e) {
+                console.log('Visualization error');
+                console.log(e);
+            }
         }
 
     }
@@ -180,9 +173,6 @@ export class D3Wrapper {
     }
 
     _getCustomColumnSettings(column_settings) {
-        console.log("_getCustomColumnSettings");
-        console.log(column_settings);
-
         return {
             column_expression: column_settings
         };

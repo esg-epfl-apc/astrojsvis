@@ -3,10 +3,19 @@ export class VisualizationComponent extends HTMLElement {
     container_id;
     container
 
-    constructor(container_id) {
+    content = '<div id="visualization-container">' +
+                     '</div>'
+
+    constructor(container_id = 'visualization-container') {
         super();
 
+        this.innerHTML = this.content;
+
         this.container_id = container_id;
+        //this._setContainer();
+    }
+
+    setup() {
         this._setContainer();
     }
 

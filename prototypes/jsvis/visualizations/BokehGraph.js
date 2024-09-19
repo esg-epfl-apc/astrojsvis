@@ -51,6 +51,10 @@ export class BokehGraph {
 
     constructor(container_id = '#visualization-container') {
         this.container_id = container_id;
+        //this._setContainer();
+    }
+
+    setup() {
         this._setContainer();
     }
 

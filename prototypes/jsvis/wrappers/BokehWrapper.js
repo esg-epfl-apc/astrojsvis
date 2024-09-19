@@ -31,6 +31,11 @@ export class BokehWrapper {
     configuration_object = null;
 
     constructor() {
+        //this._setContainer();
+        //this._setupListeners();
+    }
+
+    setup() {
         this._setContainer();
         this._setupListeners();
     }
@@ -123,8 +128,6 @@ export class BokehWrapper {
             let data = {x: processed_data.axis[0].data, y: processed_data.axis[1].data};
 
             if(error_bars) {
-
-                console.log(processed_data.error_bars);
 
                 let error_bars_object = {};
 

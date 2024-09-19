@@ -2,6 +2,7 @@ import {WrapperContainer} from "../containers/WrapperContainer";
 import {FileRegistry} from "../registries/FileRegistry";
 import {FileRegistryChangeEvent} from "../events/FileRegistryChangeEvent";
 import {FITSSettingsComponent} from "./file_type/FITSSettingsComponent";
+import {Setup} from "../setup/Setup.js";
 
 export class FileComponent extends HTMLElement {
 
@@ -21,14 +22,61 @@ export class FileComponent extends HTMLElement {
     static add_button_id = 'add-to-plot'
     static remove_button_id = 'remove-from-plot'
 
+    static content = '<div id="file-component-container" class="grid-container">\n' +
+        '                        <div class="full-width-column" style="grid-column: 1 / span 2;">\n' +
+        '                            <div class="card">\n' +
+        '                                <div class="card-header">Download</div>\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <input type="file" id="file-input-local">\n' +
+        '                                    <select id="select-file-type">\n' +
+        '                                        <option value="fits">FITS</option>\n' +
+        '                                    </select>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                        </div>\n' +
+        '                        <div class="left-column">\n' +
+        '                            <div id="available-files-card" class="card">\n' +
+        '                                <div class="card-header">Available files</div>\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <div id="available-files-list" class="list-group">\n' +
+        '\n' +
+        '                                    </div>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                        </div>\n' +
+        '                        <div class="right-column">\n' +
+        '                            <div id="current-files-card" class="card">\n' +
+        '                                <div class="card-header">Current files</div>\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <div id="current-files-list" class="list-group">\n' +
+        '                                    </div>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                        </div>\n' +
+        '                        <div id="file-settings-container" class="full-width-column">\n' +
+        '\n' +
+        '                        </div>\n' +
+        '                    </div>';
+
     container_id;
     container;
 
     fits_reader_wrapper = null;
 
-    constructor(container_id) {
+    fits_component = null;
+    csv_component = null;
+
+    constructor(container_id = 'file-component-container') {
         super();
+
+        //this.fits_component = Setup.getFITSSettingsComponent();
+        //this.csv_component = Setup.getCSVSettingsComponent();
+
+        this.innerHTML = FileComponent.content;
+
         this.container_id = container_id;
+
+        /*
         this._setContainer();
 
         this.handleFITSLoadedEvent = this.handleFITSLoadedEvent.bind(this);
@@ -41,6 +89,32 @@ export class FileComponent extends HTMLElement {
         this._setupInnerListeners();
 
         this._setupInnerElementsListeners();
+        */
+    }
+
+    setup() {
+        this._setContainer();
+        this._setupEventHandlers()
+        this._setupListeners();
+    }
+
+    _setupListeners() {
+        this._setupExternalListeners();
+        this._setupInnerListeners();
+        this._setupInnerElementsListeners();
+    }
+
+    _setupEventHandlers() {
+        this.handleFITSLoadedEvent = this.handleFITSLoadedEvent.bind(this);
+        this.handleSelectChangeEvent = this.handleSelectChangeEvent.bind(this);
+        this.handleLoadFileEvent = this.handleLoadFileEvent.bind(this);
+        this.handleFileLoadedEvent = this.handleFileLoadedEvent.bind(this);
+        this.handleFileRegistryChangeEvent = this.handleFileRegistryChangeEvent.bind(this);
+    }
+
+    _injectInnerComponents() {
+        let document_settings_container = document.getElementById('file-settings-container');
+        document_settings_container.appendChild(this.fits_component);
     }
 
     _setupExternalListeners() {

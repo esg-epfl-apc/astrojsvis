@@ -18,4 +18,15 @@ module.exports = {
         aggregateTimeout: 800,
         ignored: ['dist/**', '_vendors/**', '_test_files/**', '_old/**'],
     },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                ],
+            },
+        ],
+    },
 };
