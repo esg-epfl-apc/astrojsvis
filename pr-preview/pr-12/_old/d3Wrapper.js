@@ -20,12 +20,6 @@ function createGraphSpectrum(data, settings) {
 
 function createGraph0(container, data, settings = null) {
 
-    console.log("Data")
-    console.log(data);
-    
-    console.log("Settings")
-    console.log(settings);
-
     dataset = data;
     settings_data = settings;
 
@@ -71,15 +65,6 @@ function createGraph0(container, data, settings = null) {
 
     if(settings) {
 
-        console.log("Axis settings");
-
-        console.log("Axis")
-        console.log(settings['select-axis-x-scale']);
-        console.log(settings['select-axis-y-scale']);
-
-        console.log(settings['select-axis-x']);
-        console.log(settings['select-axis-y']);
-
         let x_scale = settings['select-axis-x-scale'].value;
         let y_scale = settings['select-axis-y-scale'].value;
 
@@ -89,10 +74,6 @@ function createGraph0(container, data, settings = null) {
         }
 
         try {
-            console.log("Error bars")
-            console.log(settings['select-axis-x-error-bars']);
-            console.log(settings['select-axis-y-error-bars']);
-
             let error_bar_x_column = settings['select-axis-x-error-bars'].value;
             let error_bar_y_column = settings['select-axis-y-error-bars'].value;
         } catch(e) {
@@ -182,10 +163,8 @@ function createGraph0(container, data, settings = null) {
     let y_data = 'RATE';
 
     if(settings) {
-        console.log('settings');
         x_data = settings['select-axis-x'].value;
         y_data = settings['select-axis-y'].value;
-        console.log(x_data + ' ' + y_data);
     } else {
         x_data = 'TIME';
         y_data = 'RATE';
@@ -239,14 +218,8 @@ function createAxis(data, settings, _svg, width, height, scales) {
         "log": d3.scaleLog
     };
 
-    console.log(settings['select-axis-x']);
-    console.log(settings['select-axis-y']);
-
     let x_axis_col = settings['select-axis-x'].value;
     let y_axis_col = settings['select-axis-y'].value;
-
-    console.log("Axis columns");
-    console.log(x_axis_col+" "+y_axis_col);
 
     let _x = scale_functions[scales.x]()
         .domain(d3.extent(data, d => d[x_axis_col]))
@@ -295,8 +268,6 @@ function createAxis(data, settings, _svg, width, height, scales) {
 
 function updateChart(e) {
 
-    console.log(e);
-
     let newX = e.transform.rescaleX(x);
     let newY = e.transform.rescaleY(y);
 
@@ -338,10 +309,8 @@ function updateChart(e) {
     let y_data;
 
     if(settings_data) {
-        console.log('settings data');
         x_data = settings_data['select-axis-x'].value;
         y_data = settings_data['select-axis-y'].value;
-        console.log(x_data + ' ' + y_data);
     } else {
         x_data = 'TIME';
         y_data = 'RATE';

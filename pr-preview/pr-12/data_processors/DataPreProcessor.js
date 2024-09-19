@@ -14,12 +14,7 @@ export class DataPreProcessor {
     getProcessedDataset(dataset_settings_object) {
         let dataset = {};
 
-        console.log('DATAPREPROCESSOR');
-        console.log(dataset_settings_object);
-
         dataset_settings_object.axis.forEach((axis) => {
-            console.log("AXIS");
-            console.log(axis.file_id);
 
             let frw = WrapperContainer.getFITSReaderWrapper();
 
@@ -40,9 +35,6 @@ export class DataPreProcessor {
                 let column_array = [];
                 let temp_column_data = [];
 
-                console.log("Custom Column");
-                console.log(axis);
-
                 let expression_array = this.parseColumnsExpression(axis.column_expression);
                 let operator_array = this.parseColumnsOperators(axis.column_expression);
 
@@ -50,35 +42,24 @@ export class DataPreProcessor {
                     column_array.push(ColumnUtils.getColumnSettings(operand));
                 });
 
-                console.log(column_array);
-
                 let frw = WrapperContainer.getFITSReaderWrapper();
 
                 column_array.forEach((column) => {
-                    console.log(column);
                     let col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
 
                     temp_column_data.push(col_data);
-                    console.log(temp_column_data);
                 })
 
                 let processed_data = this.getCustomColumnProcessedData(temp_column_data, operator_array);
-
-                console.log(this.getCustomColumnProcessedData(temp_column_data, operator_array));
-                console.log(processed_data);
 
                 column_data = processed_data;
 
             } else {
                 column_data = frw.getColumnDataFromHDU(axis.hdu_index, axis.column_name);
-                console.log(column_data);
             }
-
-            console.log(column_data);
 
             axis.data = column_data;
 
-            console.log(axis.data);
         })
 
         if(dataset_settings_object.hasOwnProperty('error_bars')) {
@@ -110,20 +91,13 @@ export class DataPreProcessor {
             })
         }
 
-        console.log(dataset_settings_object);
-
         dataset = dataset_settings_object;
-
-        console.log(dataset);
 
         return dataset;
     }
 
     datasetToJSONData(dataset_settings_object) {
         let rows = [];
-
-        console.log("JSON DATA");
-        console.log(dataset_settings_object);
 
         dataset_settings_object.axis.forEach((axis) => {
 
@@ -154,9 +128,6 @@ export class DataPreProcessor {
 
     processErrorBarDataJSON(dataset, axis, error_bars) {
 
-        console.log(error_bars);
-        console.log(dataset);
-
         let error_bar_x_values = [];
         let error_bar_y_values = [];
 
@@ -171,10 +142,6 @@ export class DataPreProcessor {
         dataset.forEach(function(datapoint){
 
             if(error_bars.x) {
-
-                console.log("X");
-                console.log(datapoint[axis_x]);
-                console.log(error_bar_x_column);
 
                 let error_bar_x = [
                     {
@@ -191,10 +158,6 @@ export class DataPreProcessor {
             }
 
             if(error_bars.y) {
-
-                console.log("Y");
-                console.log(datapoint[axis_x]);
-                console.log(error_bar_y_column);
 
                 let error_bar_y = [
                     {
@@ -230,9 +193,6 @@ export class DataPreProcessor {
     getCustomColumnProcessedData(operands, operators) {
         let data = [];
 
-        console.log(operands);
-        console.log(operators);
-
         let expression_string;
         for(let i = 0; i < operands[0].length; i++) {
             expression_string = '';
@@ -246,9 +206,6 @@ export class DataPreProcessor {
             data.push(eval(expression_string));
 
         }
-
-        console.log(expression_string);
-        console.log(data);
 
         return data;
     }
@@ -272,9 +229,6 @@ export class DataPreProcessor {
         let expression_parser = new ExpressionParser();
 
         let columns_array = expression_parser.parseStandardExpressionOperand(expression);
-
-        console.log("Expression parsing")
-        console.log(columns_array);
 
         return columns_array;
     }

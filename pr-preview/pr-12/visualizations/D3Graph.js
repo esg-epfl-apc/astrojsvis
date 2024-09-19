@@ -53,15 +53,23 @@ export class D3Graph {
         this.container_id = container_id;
         this.dataset = dataset;
 
-        this._setContainer();
+        //this._setContainer();
 
         this._updateChart = this._updateChart.bind(this);
 
         this.initialized = false;
     }
 
+    setup() {
+        this._setContainer();
+    }
+
     _setContainer() {
-        this.container = document.getElementById(this.container_id);
+        try {
+            this.container = document.getElementById(this.container_id);
+        } catch(e) {
+            console.log(e);
+        }
     }
 
     initializeSettings(data,
@@ -86,8 +94,6 @@ export class D3Graph {
             if(error_bars) {
                 this.has_error_bars = true;
                 this.error_bars = error_bars;
-
-                console.log(error_bars);
 
                 this.x_axis_data_col_error_bar = axis['x'].value;
                 this.y_axis_data_col_error_bar = axis['y'].value;

@@ -11,5 +11,16 @@ module.exports = {
             type: 'umd',
         },
         path: path.resolve(__dirname, 'dist', 'astrovis'),
-    }
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                ],
+            },
+        ],
+    },
 };

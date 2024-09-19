@@ -58,13 +58,28 @@ export class ArithmeticColumnInput extends HTMLElement {
     constructor() {
         super();
 
+        //console.log('Arithmetic constructor');
+
         this.innerHTML = this.column_display + this.column_main_input + this.column_create_button;
 
-        this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
+        //this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
 
+        //this._setupInnerElementsListeners();
+        //this._setupExternalListeners();
+    }
 
+    setup() {
+        this._setupEventHandlers();
+        this._setupListeners();
+    }
+
+    _setupListeners() {
         this._setupInnerElementsListeners();
         this._setupExternalListeners();
+    }
+
+    _setupEventHandlers() {
+        this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
     }
 
     _setupExternalListeners() {

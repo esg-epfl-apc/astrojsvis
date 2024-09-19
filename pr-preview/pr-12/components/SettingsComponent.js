@@ -7,6 +7,7 @@ import {ColumnUtils} from "../utils/ColumnUtils";
 import {RegistryContainer} from "../containers/RegistryContainer";
 import {FileRegistryChangeEvent} from "../events/FileRegistryChangeEvent";
 import {CustomColumnRegistry} from "../registries/CustomColumnRegistry";
+import {Setup} from "../setup/Setup";
 
 export class SettingsComponent extends HTMLElement {
 
@@ -38,14 +39,160 @@ export class SettingsComponent extends HTMLElement {
     fits_reader_wrapper = null;
     settings_object = null;
 
+    content = '<div id="settings-container" class="card">\n' +
+        '                        <div class="card-header">\n' +
+        '                            <h5 class="card-title">Settings</h5>\n' +
+        '                        </div>\n' +
+        '                        <div class="card-body">\n' +
+        '                            <!-- LIBRARY SETTINGS -->\n' +
+        '                            <div id="library-settings" class="card">\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <h6 class="card-title">Library Selection</h6>\n' +
+        '                                    <select id="select-library" class="form-select">\n' +
+        '                                        <option value="d3">D3</option>\n' +
+        '                                        <option value="bokeh">Bokeh</option>\n' +
+        '                                    </select>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- LIBRARY SPECIFIC SETTINGS -->\n' +
+        '                            <div id="bokeh-settings" class="card">\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <h6 class="card-title">Bokeh Settings</h6>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <div id="d3-settings" class="card">\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <h6 class="card-title">D3 Settings</h6>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- DATA TYPE SETTINGS -->\n' +
+        '                            <div id="data-type-settings" class="card">\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <h6 class="card-title">Data type selection</h6>\n' +
+        '                                    <select id="select-data-type" class="form-select">\n' +
+        '                                        <option selected>Generic</option>\n' +
+        '                                        <option value="light-curve">Light Curve</option>\n' +
+        '                                        <option value="spectrum">Spectrum</option>\n' +
+        '                                    </select>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- DATA TYPE SPECIFIC SETTINGS -->\n' +
+        '                            <div id="light-curve-settings" class="card">\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <h6 class="card-title">Light Curve Settings</h6>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <div id="spectrum-settings" class="card">\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <h6 class="card-title">Spectrum Settings</h6>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- HDUS SETTINGS -->\n' +
+        '                            <div id="hdus-settings" class="card">\n' +
+        '                                <div id="card-body-hdus" class="card-body">\n' +
+        '                                    <h6 class="card-title">HDU Selection</h6>\n' +
+        '                                    <select id="select-hdus" class="form-select">\n' +
+        '                                        <option selected>HDUs</option>\n' +
+        '                                    </select>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- COLUMN SETTINGS -->\n' +
+        '                            <div id="columns-settings" class="card">\n' +
+        '                                <div id="card-body-columns" class="card-body column-creation-container">\n' +
+        '                                    <h6 class="card-title">Column Creation</h6>\n' +
+        '                                    <arithmetic-column-component id="arithmetic-column-component"></arithmetic-column-component>' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- AXIS SETTINGS -->\n' +
+        '                            <div id="axis-settings" class="card">\n' +
+        '                                <div id="card-body-axis" class="card-body">\n' +
+        '                                    <h6 class="card-title">Axis Settings</h6>\n' +
+        '\n' +
+        '                                    <select id="select-axis-x" class="form-select select-axis">\n' +
+        '                                        <option selected>X axis</option>\n' +
+        '                                    </select>\n' +
+        '                                    <select id="select-axis-x-scale" class="form-select select-axis-scale static-select">\n' +
+        '                                        <option value="linear" selected>Linear</option>\n' +
+        '                                        <option value="log" selected>Log</option>\n' +
+        '                                    </select>\n' +
+        '\n' +
+        '                                    <label for="has-x-range-checkbox">Add X Range:</label>\n' +
+        '                                    <input type="checkbox" id="has-x-range-checkbox" class="form-checkbox" name="add-x-range">\n' +
+        '                                    <div id="x-range-fields" class="axis-range-div" style="">\n' +
+        '                                        <label for="x-lower-bound">X Lower Bound:</label>\n' +
+        '                                        <input type="number" id="x-lower-bound" class="form-input" name="x-lower-bound">\n' +
+        '                                        <label for="x-higher-bound">X Upper Bound:</label>\n' +
+        '                                        <input type="number" id="x-higher-bound" class="form-input" name="x-higher-bound">\n' +
+        '                                    </div>\n' +
+        '\n' +
+        '                                    <select id="select-axis-y" class="form-select select-axis">\n' +
+        '                                        <option selected>Y axis</option>\n' +
+        '                                    </select>\n' +
+        '                                    <select id="select-axis-y-scale" class="form-select select-axis-scale static-select">\n' +
+        '                                        <option value="linear" selected>Linear</option>\n' +
+        '                                        <option value="log" selected>Log</option>\n' +
+        '                                    </select>\n' +
+        '\n' +
+        '                                    <label for="has-y-range-checkbox">Add Y Range:</label>\n' +
+        '                                    <input type="checkbox" id="has-y-range-checkbox" class="form-checkbox" name="add-y-range">\n' +
+        '                                    <div id="y-range-fields" class="axis-range-div" style="">\n' +
+        '                                        <label for="y-lower-bound">Y Lower Bound:</label>\n' +
+        '                                        <input type="number" id="y-lower-bound" class="form-input" name="y-lower-bound">\n' +
+        '                                        <label for="y-higher-bound">Y Upper Bound:</label>\n' +
+        '                                        <input type="number" id="y-higher-bound" class="form-input" name="y-higher-bound">\n' +
+        '                                    </div>\n' +
+        '\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- ERROR BARS SETTINGS -->\n' +
+        '                            <div id="error-bars-settings" class="card">\n' +
+        '                                <div id="card-body-error-bars" class="card-body">\n' +
+        '                                    <h6 class="card-title">Error Bars</h6>\n' +
+        '                                    <label for="has-error-bars-checkbox">Add Error Bars: </label>\n' +
+        '                                    <input type="checkbox" id="has-error-bars-checkbox" class="form-checkbox" name="has-error-bars-checkbox">\n' +
+        '                                    <select id="select-axis-x-error-bar" class="form-select select-axis-error-bars">\n' +
+        '                                        <option value="none" selected>X axis error bars</option>\n' +
+        '                                    </select>\n' +
+        '                                    <select id="select-axis-y-error-bar" class="form-select select-axis-error-bars">\n' +
+        '                                        <option value="none" selected>Y axis error bars</option>\n' +
+        '                                    </select>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- BINNING SETTINGS -->\n' +
+        '                            <div id="binning-settings" class="card">\n' +
+        '                                <div class="card-body">\n' +
+        '                                    <h6 class="card-title">Binning Settings</h6>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '                            <!-- ADDITIONAL DATASET SETTINGS -->\n' +
+        '                            <div id="additional-dataset-settings" class="card">\n' +
+        '                                <div id="card-body-dataset" class="card-body">\n' +
+        '                                    <h6 class="card-title">Dataset Selection</h6>\n' +
+        '                                </div>\n' +
+        '                            </div>\n' +
+        '\n' +
+        '                            <button id="button-generate" class="btn btn-primary">Generate</button>\n' +
+        '                        </div>\n' +
+        '                    </div>'
+
+    arithmetic_column_component_id = 'arithmetic-column-component';
+    arithmetic_column_component = null;
+
     constructor() {
         super();
 
+        this.arithmetic_column_component = Setup.getArithmeticColumnComponent();
+
+        this.innerHTML = this.content;
+
+        //this._injectArithmeticColumnComponent();
+
         this.container_id = SettingsComponent.container_id;
-        this._setContainer();
+        //this._setContainer();
 
         this.settings_object = SettingsContainer.getSettingsContainer().getVisualizationSettingsObject();
 
+        /*
         this.handleFITSLoadedEvent = this.handleFITSLoadedEvent.bind(this);
         this.handleConfigurationEvent = this.handleConfigurationEvent.bind(this);
 
@@ -55,11 +202,46 @@ export class SettingsComponent extends HTMLElement {
         this.handleGenerateEvent = this.handleGenerateEvent.bind(this);
         this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
         this.handleArithmeticColumnChangeEvent = this.handleArithmeticColumnChangeEvent.bind(this);
+        */
 
+        //this._setupExternalListeners();
+        //this._setupInnerListeners();
+
+        //this._setupInnerElementsListeners();
+    }
+
+    setup() {
+        this._setContainer();
+
+        this.arithmetic_column_component = document.getElementById(this.arithmetic_column_component_id);
+        this.arithmetic_column_component.setup();
+
+        this._setupListeners();
+        this._setupEventHandlers();
+    }
+
+    _setupListeners() {
         this._setupExternalListeners();
         this._setupInnerListeners();
 
         this._setupInnerElementsListeners();
+    }
+
+    _setupEventHandlers() {
+        this.handleFITSLoadedEvent = this.handleFITSLoadedEvent.bind(this);
+        this.handleConfigurationEvent = this.handleConfigurationEvent.bind(this);
+
+        this.handleLibraryChangeEvent = this.handleLibraryChangeEvent.bind(this);
+        this.handleDataTypeChangeEvent = this.handleDataTypeChangeEvent.bind(this);
+        this.handleHDUsChangeEvent = this.handleHDUsChangeEvent.bind(this);
+        this.handleGenerateEvent = this.handleGenerateEvent.bind(this);
+        this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
+        this.handleArithmeticColumnChangeEvent = this.handleArithmeticColumnChangeEvent.bind(this);
+    }
+
+    _injectArithmeticColumnComponent() {
+        let arithmetic_column_container = document.querySelector('.column-creation-container');
+        arithmetic_column_container.appendChild(this.arithmetic_column_component);
     }
 
     _setupExternalListeners() {
@@ -83,6 +265,12 @@ export class SettingsComponent extends HTMLElement {
         this._setSelectAxisListener();
         this._setGenerateButtonListener();
         this._setCalculationRadioListeners();
+    }
+
+    setupListeners() {
+        this._setupExternalListeners();
+        this._setupInnerListeners();
+        this._setupInnerElementsListeners();
     }
 
     handleFITSLoadedEvent(event) {
@@ -234,7 +422,6 @@ export class SettingsComponent extends HTMLElement {
 
     handleArithmeticColumnChangeEvent(event) {
         let columns_opt_groups = this._createColumnsOptGroups();
-        console.log(columns_opt_groups);
         this._setSelectGroupAxis(columns_opt_groups);
         //console.log(event);
     }
@@ -735,8 +922,6 @@ export class SettingsComponent extends HTMLElement {
             columns.y = {};
             let scales = {};
 
-            console.log(values['select-axis-x']);
-
             columns.x.column_type = 'standard';
             columns.y.column_type = 'standard';
 
@@ -750,8 +935,6 @@ export class SettingsComponent extends HTMLElement {
 
             axis.x = values['select-axis-x'].value;
             axis.y = values['select-axis-y'].value;
-
-            console.log(axis);
 
             scales.x = values['select-axis-x-scale'].value;
             scales.y = values['select-axis-y-scale'].value;

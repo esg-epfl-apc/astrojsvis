@@ -4,6 +4,8 @@ import {FileRegistry} from "../registries/FileRegistry";
 import {StringUtils} from "../utils/StringUtils";
 import {FileLoadedEvent} from "../events/FileLoadedEvent";
 
+import {parseFITS} from "fits-reader-js/fits-reader";
+
 export class FITSReaderWrapper {
 
     file_path = null;
@@ -14,7 +16,6 @@ export class FITSReaderWrapper {
 
     constructor(file_path = null) {
         if(file_path) {
-            console.log(file_path);
             if (FITSReaderWrapper.is_path_valid(file_path)) {
                 this.file_path = file_path;
                 this._getFile()
@@ -53,12 +54,18 @@ export class FITSReaderWrapper {
 
     _readFile(arrayBuffer) {
         try {
-            this.file = window.FITSReader.parseFITS(arrayBuffer);
+            this.file = parseFITS(arrayBuffer);
+        } catch(e) {
+            console.log("Error parsing fits file");
+            console.log(e);
+        }
+
+        try {
 
             this.sendFITSLoadedEvents();
 
         } catch(e) {
-            console.log("Error initializing interface")
+            console.log("Error initializing interface");
         }
     }
 
@@ -477,7 +484,11 @@ export class FITSReaderWrapper {
             file: this.file
         });
 
-        filele.dispatchToSubscribers();
+        try {
+            filele.dispatchToSubscribers();
+        } catch(e) {
+            console.log(e);
+        }
     }
 
     static is_path_valid(path) {
