@@ -26,21 +26,6 @@ export class ArithmeticColumnInput extends HTMLElement {
         "<button class='btn btn-secondary'>/</button>" +
         "</div>" +
         "<div class='button-grid'>" +
-        "<button class='btn btn-secondary'>(</button>" +
-        "<button class='btn btn-secondary'>)</button>" +
-        "<button class='btn btn-secondary'>pow2()</button>" +
-        "<button class='btn btn-secondary'>pow3()</button>" +
-        "</div>" +
-        "<div class='button-grid'>" +
-        "<button class='btn btn-secondary'>sqrt()</button>" +
-        "<button class='btn btn-secondary'>min()</button>" +
-        "<button class='btn btn-secondary'>max()</button>" +
-        "<button class='btn btn-secondary'>mean()</button>" +
-        "</div>" +
-        "<div class='button-grid'>" +
-        "<button class='btn btn-secondary'>log()</button>" +
-        "<button class='btn btn-secondary'><--</button>" +
-        "<button class='btn btn-secondary'>--></button>" +
         "<button class='btn btn-danger'>C</button>" +
         "<button class='btn btn-success'>V</button>" +
         "</div>" +

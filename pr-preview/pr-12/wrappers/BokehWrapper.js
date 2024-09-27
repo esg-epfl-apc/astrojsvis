@@ -86,8 +86,19 @@ export class BokehWrapper {
             let axis_settings = [];
 
             for(let axis_column in axis) {
-                let axis_column_object = this._getColumnSettings(axis[axis_column]);
-                axis_column_object = {...axis_column_object, ...{axis: axis_column}}
+                let axis_column_object;
+
+                if(columns[axis_column].column_type === 'standard') {
+                    axis_column_object = this._getColumnSettings(axis[axis_column]);
+                    axis_column_object = {...axis_column_object, ...columns[axis_column], ...{axis: axis_column}}
+                } else if(columns[axis_column].column_type === 'processed') {
+                    axis_column_object = this._getCustomColumnSettings(axis[axis_column]);
+                    axis_column_object = {...axis_column_object, ...columns[axis_column], ...{axis: axis_column}, ...{column_name: axis+'_processed'}}
+                } else {
+                    axis_column_object = this._getColumnSettings(axis[axis_column]);
+                    axis_column_object = {...axis_column_object, ...columns[axis_column], ...{axis: axis_column}}
+                }
+
 
                 axis_settings.push(axis_column_object);
             }
