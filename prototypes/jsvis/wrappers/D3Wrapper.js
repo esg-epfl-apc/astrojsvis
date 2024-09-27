@@ -107,8 +107,20 @@ export class D3Wrapper {
 
                 let error_bars_settings = [];
                 for(let axis_column in error_bars) {
+
                     let axis_column_object = this._getColumnSettings(error_bars[axis_column]);
                     axis_column_object = {...axis_column_object, ...{axis: axis_column}}
+
+                    if(columns[axis_column+'_error'].column_type === 'standard') {
+                        axis_column_object = this._getColumnSettings(error_bars[axis_column]);
+                        axis_column_object = {...axis_column_object, ...{axis: axis_column}, ...{'column_type': 'standard'}}
+                    } else if(columns[axis_column+'_error'].column_type === 'processed') {
+                        axis_column_object = this._getCustomColumnSettings(error_bars[axis_column]);
+                        axis_column_object = {...axis_column_object, ...{axis: axis_column}, ...{'column_type': 'processed'}}
+                    } else {
+                        axis_column_object = this._getColumnSettings(error_bars[axis_column]);
+                        axis_column_object = {...axis_column_object, ...{axis: axis_column}, ...{'column_type': 'standard'}}
+                    }
 
                     error_bars_settings.push(axis_column_object);
                 }
@@ -131,7 +143,8 @@ export class D3Wrapper {
                     error_bars_object[error_bar.axis] = error_bar.column_name;
                 })
 
-                error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars_object)
+                error_bars = dpp.processErrorBarDataJSON(processed_json_data, axis, error_bars_object);
+
             }
 
             if(ranges != null) {

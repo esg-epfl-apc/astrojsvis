@@ -80,6 +80,8 @@ export class BokehWrapper {
 
             let dataset_settings = {};
 
+            let columns = this.settings_object.getColumnsSettings();
+
             let axis = this.settings_object.getAxisSettings();
             let axis_settings = [];
 
@@ -100,8 +102,18 @@ export class BokehWrapper {
 
                 let error_bars_settings = [];
                 for(let axis_column in error_bars) {
-                    let axis_column_object = this._getColumnSettings(error_bars[axis_column]);
-                    axis_column_object = {...axis_column_object, ...{axis: axis_column}}
+                    let axis_column_object;
+
+                    if(columns[axis_column+'_error'].column_type === 'standard') {
+                        axis_column_object = this._getColumnSettings(error_bars[axis_column]);
+                        axis_column_object = {...axis_column_object, ...{axis: axis_column}, ...{'column_type': 'standard'}}
+                    } else if(columns[axis_column+'_error'].column_type === 'processed') {
+                        axis_column_object = this._getCustomColumnSettings(error_bars[axis_column]);
+                        axis_column_object = {...axis_column_object, ...{axis: axis_column}, ...{'column_type': 'processed'}}
+                    } else {
+                        axis_column_object = this._getColumnSettings(error_bars[axis_column]);
+                        axis_column_object = {...axis_column_object, ...{axis: axis_column}, ...{'column_type': 'standard'}}
+                    }
 
                     error_bars_settings.push(axis_column_object);
                 }
@@ -185,6 +197,12 @@ export class BokehWrapper {
 
             visualization.initializeGraph();
         }
+    }
+
+    _getCustomColumnSettings(column_settings) {
+        return {
+            column_expression: column_settings
+        };
     }
 
     _getColumnSettings(column_settings) {
