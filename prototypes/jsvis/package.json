@@ -1,6 +1,6 @@
 {
   "name": "astrovisjs",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "main": "dist/astrovis.js",
   "scripts": {
     "build": "npx webpack --config webpack.dev.js",
