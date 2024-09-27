@@ -24,6 +24,8 @@ export class CustomColumnRegistry {
         CustomColumnRegistry.columns.push(column);
 
         CustomColumnRegistry.column_counter++;
+
+        return column;
     }
 
     static removeFromAvailableColumns(column_id) {

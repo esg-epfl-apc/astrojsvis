@@ -422,7 +422,14 @@ export class SettingsComponent extends HTMLElement {
 
     handleArithmeticColumnChangeEvent(event) {
         let columns_opt_groups = this._createColumnsOptGroups();
+
+        let generic_opt_group = this._createGenericColumnOptionsGroup();
+
         this._setSelectGroupAxis(columns_opt_groups);
+
+        columns_opt_groups[0] = generic_opt_group;
+
+        this._setSelectGroupErrorBars(columns_opt_groups);
         //console.log(event);
     }
 
@@ -555,7 +562,11 @@ export class SettingsComponent extends HTMLElement {
         let select_axis_x = document.getElementById(SettingsComponent.select_axis_x_id);
         let select_axis_y = document.getElementById(SettingsComponent.select_axis_y_id);
 
+        //let select_axis_x_error_bar = document.getElementById(SettingsComponent.select_error_bar_x_id);
+        //let select_axis_y_error_bar = document.getElementById(SettingsComponent.select_error_bar_y_id);
+
         let select_axis = [select_axis_x, select_axis_y];
+        //let select_axis = [select_axis_x, select_axis_y, select_axis_x_error_bar, select_axis_y_error_bar];
 
         columns_optgroup.forEach((column_optgroup) => {
             select_axis.forEach((select) => {
@@ -948,19 +959,54 @@ export class SettingsComponent extends HTMLElement {
             if(values['has-error-bars-checkbox'].checked === true) {
                 let error_bars = {};
 
+                let columns_error_bars = this.settings_object.getColumnsSettings();
+
                 if(values['select-axis-x-error-bar'] !== undefined) {
                     error_bars.x = values['select-axis-x-error-bar'].value;
+                    //error_bars.x.column_type = 'standard';
+                    let column_type;
+                    let x_error_column = {};
+
+                    if(values['select-axis-x-error-bar'].column_type != undefined) {
+                        if(values['select-axis-x-error-bar'].column_type === 'processed') {
+                            column_type = 'processed';
+                        } else {
+                            column_type = 'standard';
+                        }
+                    }
+
+                    x_error_column.column_type = column_type;
+
+                    columns_error_bars.x_error = x_error_column;
+
                 } else {
                     delete error_bars.x
                 }
 
                 if(values['select-axis-y-error-bar'] !== undefined) {
                     error_bars.y = values['select-axis-y-error-bar'].value;
+
+                    //error_bars.x.column_type = 'standard';
+                    let column_type;
+                    let y_error_column = {};
+
+                    if(values['select-axis-y-error-bar'].column_type != undefined) {
+                        if(values['select-axis-y-error-bar'].column_type === 'processed') {
+                            column_type = 'processed';
+                        } else {
+                            column_type = 'standard';
+                        }
+                    }
+
+                    y_error_column.column_type = column_type;
+
+                    columns_error_bars.y_error = y_error_column;
                 } else {
                     delete error_bars.y
                 }
 
                 this.settings_object.setErrorBarsSettings(error_bars);
+                this.settings_object.setColumnsSettings(columns_error_bars);
             }
         }
 

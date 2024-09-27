@@ -65,10 +65,12 @@ export class DataPreProcessor {
         if(dataset_settings_object.hasOwnProperty('error_bars')) {
             dataset_settings_object.error_bars.forEach((error_bar) => {
 
-                let file_object = FileRegistry.getFileById(error_bar.file_id);
+                if(error_bar.file_id !== undefined) {
+                    let file_object = FileRegistry.getFileById(error_bar.file_id);
 
-                let frw = WrapperContainer.getFITSReaderWrapper();
-                frw.setFile(file_object.file);
+                    let frw = WrapperContainer.getFITSReaderWrapper();
+                    frw.setFile(file_object.file);
+                }
 
                 let column_data;
 
@@ -83,6 +85,30 @@ export class DataPreProcessor {
                         })
                     }
 
+                }  else if(error_bar.column_type === 'processed') {
+                    let column_array = [];
+                    let temp_column_data = [];
+
+                    error_bar.column_name = error_bar.axis + '_error';
+
+                    let expression_array = this.parseColumnsExpression(error_bar.column_expression);
+                    let operator_array = this.parseColumnsOperators(error_bar.column_expression);
+
+                    expression_array.forEach((operand) => {
+                        column_array.push(ColumnUtils.getColumnSettings(operand));
+                    });
+
+                    let frw = WrapperContainer.getFITSReaderWrapper();
+
+                    column_array.forEach((column) => {
+                        let col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
+
+                        temp_column_data.push(col_data);
+                    })
+
+                    let processed_data = this.getCustomColumnProcessedData(temp_column_data, operator_array);
+
+                    column_data = processed_data;
                 } else {
                     column_data = frw.getColumnDataFromHDU(error_bar.hdu_index, error_bar.column_name);
                 }

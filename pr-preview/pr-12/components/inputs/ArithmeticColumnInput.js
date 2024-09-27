@@ -1,6 +1,5 @@
 import {FileRegistry} from "../../registries/FileRegistry";
 import {WrapperContainer} from "../../containers/WrapperContainer";
-import {RegistryContainer} from "../../containers/RegistryContainer";
 import {ArithmeticColumnChangeEvent} from "../../events/ArithmeticColumnChangeEvent";
 import {CustomColumnRegistry} from "../../registries/CustomColumnRegistry";
 
@@ -58,14 +57,8 @@ export class ArithmeticColumnInput extends HTMLElement {
     constructor() {
         super();
 
-        //console.log('Arithmetic constructor');
-
         this.innerHTML = this.column_display + this.column_main_input + this.column_create_button;
 
-        //this.handleFileChangeEvent = this.handleFileChangeEvent.bind(this);
-
-        //this._setupInnerElementsListeners();
-        //this._setupExternalListeners();
     }
 
     setup() {
@@ -89,6 +82,7 @@ export class ArithmeticColumnInput extends HTMLElement {
     _setupInnerElementsListeners() {
         this._setCreateButtonListener();
         this._setKeyboardListener();
+        this._setColumnListListener();
     }
 
     _setCreateButtonListener() {
@@ -98,6 +92,20 @@ export class ArithmeticColumnInput extends HTMLElement {
             let display_main_input = document.getElementById(ArithmeticColumnInput.column_main_input_id);
             display_main_input.classList.toggle('visible');
         })
+    }
+
+    _setColumnListListener() {
+        let column_list = document.getElementById(ArithmeticColumnInput.column_display_id);
+
+        column_list.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                let parent_li = event.target.parentElement;
+                let column_id = parent_li.getAttribute('column-id');
+
+                CustomColumnRegistry.removeFromAvailableColumns(column_id);
+                parent_li.remove();
+            }
+        });
     }
 
     handleFileChangeEvent(event) {
@@ -165,14 +173,9 @@ export class ArithmeticColumnInput extends HTMLElement {
                     expression: input_display.value
                 };
 
-                /*
-                let custom_column_registry = RegistryContainer.getCustomColumnRegistry();
-                custom_column_registry.addToAvailableColumns(column);
-                */
+                column = CustomColumnRegistry.addToAvailableColumns(column);
 
-                CustomColumnRegistry.addToAvailableColumns(column);
-
-                this.addColumnToDisplay(input_display.value);
+                this.addColumnToDisplay(input_display.value, column);
 
                 let acce = new ArithmeticColumnChangeEvent();
                 acce.dispatchToSubscribers();
@@ -263,12 +266,13 @@ export class ArithmeticColumnInput extends HTMLElement {
         });
     }
 
-    addColumnToDisplay(expression) {
+    addColumnToDisplay(expression, column) {
         let column_display = document.getElementById(ArithmeticColumnInput.column_display_id);
 
         let li_expression = document.createElement('li');
         li_expression.innerHTML = expression +' <button class="btn btn-danger">X</button>';
         li_expression.setAttribute('data-column', expression);
+        li_expression.setAttribute('data-id', column.id)
 
         column_display.appendChild(li_expression);
     }
