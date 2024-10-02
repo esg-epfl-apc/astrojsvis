@@ -303,8 +303,6 @@ export class DataPreProcessor {
                 expression_string += operator + operands[index + 1][i];
             })
 
-            console.log(expression_string);
-
             data.push(eval(expression_string));
 
         }
