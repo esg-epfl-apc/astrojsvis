@@ -26,10 +26,19 @@ export class ExpressionParser {
 
     parseStandardExpressionOperand(expression) {
         const operator_regex = /[\+\-\*\/]/g;
+        let filtered_parts = [];
 
         let parts = expression.split(operator_regex);
 
-        let filtered_parts = parts.filter(part => part.trim() !== '');
+        let temp_filtered_parts = parts.filter(part => part.trim() !== '');
+
+        temp_filtered_parts.forEach(operand => {
+            if(!operand.includes('$')) {
+                operand = '&'+operand;
+            }
+
+            filtered_parts.push(operand)
+        })
 
         return filtered_parts;
     }

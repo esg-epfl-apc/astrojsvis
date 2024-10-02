@@ -4,6 +4,7 @@ import {SpectrumProcessor} from "./SpectrumProcessor";
 import {DataProcessorContainer} from "../containers/DataProcessorContainer";
 import {ExpressionParser} from "../utils/ExpressionParser";
 import {ColumnUtils} from "../utils/ColumnUtils";
+import {curveStep} from "../../d3/js/d3.v7";
 
 export class DataPreProcessor {
 
@@ -39,18 +40,54 @@ export class DataPreProcessor {
                 let operator_array = this.parseColumnsOperators(axis.column_expression);
 
                 expression_array.forEach((operand) => {
-                    column_array.push(ColumnUtils.getColumnSettings(operand));
+                    if(!operand.includes('&')) {
+                        column_array.push(ColumnUtils.getColumnSettings(operand));
+                    } else {
+                        column_array.push(operand);
+                    }
                 });
 
                 let frw = WrapperContainer.getFITSReaderWrapper();
 
                 column_array.forEach((column) => {
-                    let col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
+                    let col_data;
 
+                    if(typeof column === 'object') {
+                        col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
+                    }  else {
+                        col_data = column.replace('&', '');
+                    }
                     temp_column_data.push(col_data);
                 })
 
-                let processed_data = this.getCustomColumnProcessedData(temp_column_data, operator_array);
+                let temp_processed_data = [];
+
+                column_array.forEach((column) => {
+                    let col_data;
+
+                    if(typeof column !== 'string') {
+                        col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
+                    }  else {
+                        col_data = [];
+                        col_data[0] = column.replace('&', '');
+                    }
+
+                    temp_column_data.push(col_data);
+                    temp_processed_data.push(col_data);
+                })
+
+                let max_col_size = temp_column_data.map(column => column.length).reduce((max, current) => Math.max(max, current), 0);
+
+                temp_processed_data.forEach((column) => {
+                    if (column.length === 1) {
+                        let base_value = column[0];
+                        while (column.length < max_col_size) {
+                            column.push(base_value);
+                        }
+                    }
+                });
+
+                let processed_data = this.getCustomColumnProcessedData(temp_processed_data, operator_array);
 
                 column_data = processed_data;
 
@@ -95,21 +132,58 @@ export class DataPreProcessor {
                     let operator_array = this.parseColumnsOperators(error_bar.column_expression);
 
                     expression_array.forEach((operand) => {
-                        column_array.push(ColumnUtils.getColumnSettings(operand));
+                        if(!operand.includes('&')) {
+                            column_array.push(ColumnUtils.getColumnSettings(operand));
+                        } else {
+                            column_array.push(operand);
+                        }
                     });
 
                     let frw = WrapperContainer.getFITSReaderWrapper();
 
                     column_array.forEach((column) => {
-                        let col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
+                        let col_data;
 
+                        if(typeof column === 'object') {
+                            col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
+                        }  else {
+                            col_data = column.replace('&', '');
+                        }
                         temp_column_data.push(col_data);
                     })
 
-                    let processed_data = this.getCustomColumnProcessedData(temp_column_data, operator_array);
+                    let temp_processed_data = [];
+
+                    column_array.forEach((column) => {
+                        let col_data;
+
+                        if(typeof column !== 'string') {
+                            col_data = this.getProcessedColumnData(column.file_id, column.hdu_index, column.column_name, frw);
+                        }  else {
+                            col_data = [];
+                            col_data[0] = column.replace('&', '');
+                        }
+
+                        temp_column_data.push(col_data);
+                        temp_processed_data.push(col_data);
+                    })
+
+                    let max_col_size = temp_column_data.map(column => column.length).reduce((max, current) => Math.max(max, current), 0);
+
+                    temp_processed_data.forEach((column) => {
+                        if (column.length === 1) {
+                            let base_value = column[0];
+                            while (column.length < max_col_size) {
+                                column.push(base_value);
+                            }
+                        }
+                    });
+
+                    let processed_data = this.getCustomColumnProcessedData(temp_processed_data, operator_array);
 
                     column_data = processed_data;
                 } else {
+                    let frw = WrapperContainer.getFITSReaderWrapper();
                     column_data = frw.getColumnDataFromHDU(error_bar.hdu_index, error_bar.column_name);
                 }
 
@@ -228,6 +302,8 @@ export class DataPreProcessor {
             operators.forEach((operator, index) => {
                 expression_string += operator + operands[index + 1][i];
             })
+
+            console.log(expression_string);
 
             data.push(eval(expression_string));
 
