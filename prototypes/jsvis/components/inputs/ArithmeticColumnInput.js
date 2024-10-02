@@ -85,7 +85,7 @@ export class ArithmeticColumnInput extends HTMLElement {
         column_list.addEventListener('click', (event) => {
             if (event.target.tagName === 'BUTTON') {
                 let parent_li = event.target.parentElement;
-                let column_id = parent_li.getAttribute('column-id');
+                let column_id = parent_li.getAttribute('data-id');
 
                 CustomColumnRegistry.removeFromAvailableColumns(column_id);
                 parent_li.remove();
