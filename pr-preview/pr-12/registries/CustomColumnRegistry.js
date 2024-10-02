@@ -30,6 +30,7 @@ export class CustomColumnRegistry {
 
     static removeFromAvailableColumns(column_id) {
         CustomColumnRegistry.columns = CustomColumnRegistry.columns.filter(column => column.id !== parseInt(column_id));
+        CustomColumnRegistry.sendRegistryChangeEvent();
     }
 
     static getColumnById(column_id) {
