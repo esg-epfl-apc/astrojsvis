@@ -9,6 +9,7 @@ body {
     grid-template-columns: minmax(75%, auto) minmax(auto, 25%);
     grid-gap: 20px;
     padding: 20px;
+    max-width: 1080px !important;
 }
 
 .container-data {
@@ -87,6 +88,11 @@ body {
 }
 
 #visualization-component {
+    position: sticky;
+    top: 0;
+}
+
+#visualization-container {
     position: sticky;
     top: 0;
 }

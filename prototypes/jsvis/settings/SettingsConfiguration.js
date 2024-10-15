@@ -47,10 +47,10 @@ export class SettingsConfiguration {
             display: true
         },
         'binning-settings': {
-            display: true
+            display: false
         },
         'additional-dataset-settings': {
-            display: true
+            display: false
         }
     }
 
