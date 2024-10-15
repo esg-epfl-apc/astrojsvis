@@ -21,15 +21,10 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import '/css/styles.css';
 
-let file_path = window.location.href + "_test_files/spiacs_lc_query.fits";
-
-//let fits_reader_wrapper = new FITSReaderWrapper(file_path);
-
 let bokeh_wrapper = new BokehWrapper();
 
 let d3_wrapper = new D3Wrapper();
 
-//WrapperContainer.setFITSReaderWrapper(fits_reader_wrapper);
 WrapperContainer.setBokehWrapper(bokeh_wrapper);
 WrapperContainer.setD3Wrapper(d3_wrapper);
 
@@ -46,7 +41,7 @@ customElements.define('fits-component', FITSSettingsComponent);
 customElements.define('csv-component', CSVSettingsComponent);
 customElements.define('arithmetic-column-component', ArithmeticColumnInput);
 
-export function init(html_anchor_id) {
+export function init(html_anchor_id, file_url = null) {
 
     let anchor_element = document.getElementById(html_anchor_id);
 
@@ -82,7 +77,9 @@ export function init(html_anchor_id) {
     bokeh_wrapper.setup();
     VisualizationContainer.getBokehVisualization().setup();
 
-    loadFITSFile();
+    if(file_url) {
+        loadFITSFile(file_url);
+    }
 }
 
 function getMainDiv() {
@@ -131,9 +128,11 @@ function getSettingsComponentStructure() {
     return settings_component_struct;
 }
 
-function loadFITSFile() {
-    let fits_reader_wrapper = new FITSReaderWrapper(file_path);
-    setFITSReaderWrapper(fits_reader_wrapper);
+function loadFITSFile(file_url) {
+    if(file_url) {
+        let fits_reader_wrapper = new FITSReaderWrapper(file_url);
+        setFITSReaderWrapper(fits_reader_wrapper);
+    }
 }
 
 function setFITSReaderWrapper(fits_reader_wrapper) {
