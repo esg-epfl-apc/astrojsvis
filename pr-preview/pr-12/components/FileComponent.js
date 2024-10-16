@@ -235,6 +235,7 @@ export class FileComponent extends HTMLElement {
         FileRegistry.addToAvailableFiles(event.detail);
 
         this.updateAvailableFilesList();
+        this.updateCurrentFilesList();
         this._setFilesListsListeners();
     }
 
