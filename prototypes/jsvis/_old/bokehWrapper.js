@@ -21,16 +21,6 @@ function createGraph(fits_file, settings) {
     let scales = null;
 
     if(settings) {
-        console.log("Axis");
-        console.log(settings['select-axis-x']);
-        console.log(settings['select-axis-y']);
-
-        console.log("Error bars");
-        console.log(settings['select-axis-x-error-bars']);
-        console.log(settings['select-axis-y-error-bars']);
-
-        console.log(settings['select-axis-x']);
-        console.log(settings['select-axis-y']);
 
         let x_column = settings['select-axis-x'].value;
         let y_column = settings['select-axis-y'].value;

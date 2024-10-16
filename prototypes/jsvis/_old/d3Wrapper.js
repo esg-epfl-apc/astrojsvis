@@ -6,10 +6,19 @@ let margin = {top: 10, right: 30, bottom: 30, left: 60},
     width = 800 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
-function createGraph0(container, data, settings = null) {
+function instantiateGraph(container, data, settings = null) {
 
-    console.log(data);
-    console.log(settings);
+}
+
+function createGraphLightCurve(data, settings) {
+
+}
+
+function createGraphSpectrum(data, settings) {
+
+}
+
+function createGraph0(container, data, settings = null) {
 
     dataset = data;
     settings_data = settings;
@@ -56,15 +65,6 @@ function createGraph0(container, data, settings = null) {
 
     if(settings) {
 
-        console.log("Axis settings");
-
-        console.log("Axis")
-        console.log(settings['select-axis-x-scale']);
-        console.log(settings['select-axis-y-scale']);
-
-        console.log(settings['select-axis-x']);
-        console.log(settings['select-axis-y']);
-
         let x_scale = settings['select-axis-x-scale'].value;
         let y_scale = settings['select-axis-y-scale'].value;
 
@@ -74,10 +74,6 @@ function createGraph0(container, data, settings = null) {
         }
 
         try {
-            console.log("Error bars")
-            console.log(settings['select-axis-x-error-bars']);
-            console.log(settings['select-axis-y-error-bars']);
-
             let error_bar_x_column = settings['select-axis-x-error-bars'].value;
             let error_bar_y_column = settings['select-axis-y-error-bars'].value;
         } catch(e) {
@@ -167,10 +163,8 @@ function createGraph0(container, data, settings = null) {
     let y_data = 'RATE';
 
     if(settings) {
-        console.log('settings');
         x_data = settings['select-axis-x'].value;
         y_data = settings['select-axis-y'].value;
-        console.log(x_data + ' ' + y_data);
     } else {
         x_data = 'TIME';
         y_data = 'RATE';
@@ -224,14 +218,8 @@ function createAxis(data, settings, _svg, width, height, scales) {
         "log": d3.scaleLog
     };
 
-    console.log(settings['select-axis-x']);
-    console.log(settings['select-axis-y']);
-
     let x_axis_col = settings['select-axis-x'].value;
     let y_axis_col = settings['select-axis-y'].value;
-
-    console.log("Axis columns");
-    console.log(x_axis_col+" "+y_axis_col);
 
     let _x = scale_functions[scales.x]()
         .domain(d3.extent(data, d => d[x_axis_col]))
@@ -280,8 +268,6 @@ function createAxis(data, settings, _svg, width, height, scales) {
 
 function updateChart(e) {
 
-    console.log(e);
-
     let newX = e.transform.rescaleX(x);
     let newY = e.transform.rescaleY(y);
 
@@ -323,10 +309,8 @@ function updateChart(e) {
     let y_data;
 
     if(settings_data) {
-        console.log('settings data');
         x_data = settings_data['select-axis-x'].value;
         y_data = settings_data['select-axis-y'].value;
-        console.log(x_data + ' ' + y_data);
     } else {
         x_data = 'TIME';
         y_data = 'RATE';
@@ -374,66 +358,4 @@ function updateChart(e) {
             .attr("d", line_error_bar_time(error_bar_time));
     })
     */
-}
-
-function createGraph1(container, data) {
-
-    const margin = {top: 50, right: 30, bottom: 30, left: 60},
-        width = 460,
-        height = 450;
-
-    let svg = d3.select(container)
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
-
-    let x = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.time))
-        .range([ 0, width ]);
-
-    let xAxis = svg.append("g")
-        .attr("id", "x_demo")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x)
-            .tickFormat(d3.format(".1f")))
-        .call(g => g.selectAll(".tick line").clone()
-            .attr("class", "tick-line")
-            .attr("y2", -height)
-            .attr("stroke-opacity", 0.2))
-
-    let y = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.rate))
-        .range([ height, 0]);
-
-    let ylog = d3.scaleLog()
-        .domain([1, d3.max(data, d => d.rate)])
-        .range([ height, 0]);
-
-    let yAxis = svg.append("g")
-        .attr("id", "y_demo")
-        .call(d3.axisLeft(y)
-            .tickFormat(d3.format(".1f")))
-        .call(g => g.selectAll(".tick line").clone()
-            .attr("x2", width)
-            .attr("stroke-opacity", 0.2));
-
-    yAxis.select(".tick:last-of-type text").clone()
-        .attr("id", "y-label")
-        .attr("x", 3)
-        .attr("y", -5)
-        .attr("text-anchor", "start")
-        .attr("font-weight", "bold")
-        .text("Rate");
-
-    xAxis.select(".tick:last-of-type text").clone()
-        .attr("id", "y-label")
-        .attr("y", -11)
-        .attr("x", 2)
-        .attr("text-anchor", "start")
-        .attr("font-weight", "bold")
-        .text("Time");
-
 }
