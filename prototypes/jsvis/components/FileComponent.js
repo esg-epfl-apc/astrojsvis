@@ -6,7 +6,7 @@ import {Setup} from "../setup/Setup.js";
 
 export class FileComponent extends HTMLElement {
 
-    static component_id = "file_component";
+    static component_id = "file-component";
     static select_file = "select-file";
     static input_file_url = "file-input-url";
     static input_file_local = "file-input-local";
@@ -237,6 +237,12 @@ export class FileComponent extends HTMLElement {
         this.updateAvailableFilesList();
         this.updateCurrentFilesList();
         this._setFilesListsListeners();
+
+        if(document.querySelector('fits-component')) {
+            this.clearFileSettingsPanel();
+            let availableList = document.getElementById(FileComponent.component_id);
+            availableList.scrollIntoView({behavior: 'smooth'});
+        }
     }
 
     handleFileRegistryChangeEvent(event) {
@@ -244,6 +250,10 @@ export class FileComponent extends HTMLElement {
         this.updateCurrentFilesList();
 
         this._setFilesListsListeners();
+
+        this.clearFileSettingsPanel();
+        let availableList = document.getElementById(FileComponent.component_id);
+        availableList.scrollIntoView({ behavior: 'smooth' });
     }
 
     handleLoadFileEvent(event) {
