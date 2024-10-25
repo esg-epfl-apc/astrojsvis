@@ -219,7 +219,7 @@ export class FITSSettingsComponent extends HTMLElement {
                 console.log("No subsribers for event : " + FileRegistryChangeEvent.name);
             }
 
-            this.resetContainerForCurrentFile();
+            //this.resetContainerForCurrentFile();
 
         });
 
@@ -236,22 +236,22 @@ export class FITSSettingsComponent extends HTMLElement {
                 console.log("No subscribers for specified event : " + FileRegistryChangeEvent.name);
             }
 
-            this.resetContainerForCurrentFile();
+            //this.resetContainerForCurrentFile();
         });
     }
 
     setProductSettings() {
         let product_type = null;
-        let rmf_file = null;
-        let arf_file = null;
+        let rmf_id = null;
+        let arf_id = null;
 
         if(this.file.product_type) product_type = this.file.product_type;
-        if(this.file.rmf_file) rmf_file = this.file.rmf_file;
-        if(this.file.arf_file) arf_file = this.file.arf_file;
+        if(this.file.rmf_id) rmf_id = this.file.rmf_id;
+        if(this.file.arf_id) arf_id = this.file.arf_id;
 
         this.setProductTypeSelect(product_type);
-        this.setRMFFileSelect(rmf_file);
-        this.setARFFileSelect(arf_file);
+        this.setRMFFileSelect(rmf_id);
+        this.setARFFileSelect(arf_id);
     }
 
     setTables(hdu_index) {
@@ -309,7 +309,7 @@ export class FITSSettingsComponent extends HTMLElement {
             });
 
         } catch(e) {
-            console.log("DATA PARSING ERROR");
+            console.log("HDU not tabular");
         }
     }
 
@@ -350,10 +350,13 @@ export class FITSSettingsComponent extends HTMLElement {
                 let rmf_file_id = rmf_file_select.value;
                 let arf_file_id = arf_file_select.value;
 
-                FileRegistry.setFileMetadata(this.file.id, {
-                    rmf_file: rmf_file_id,
-                    arf_file: arf_file_id
-                });
+                FileRegistry.setFileMetadata(this.file.id, [
+                    {rmf_file: rmf_file_id},
+                    {arf_file: arf_file_id},
+                    {product_type: 'spectrum'}
+                ]);
+
+                alert("File parameters have been set")
             }
 
         })
@@ -363,10 +366,18 @@ export class FITSSettingsComponent extends HTMLElement {
     setProductTypeSelect(value = null) {
         let product_type_select = document.getElementById(this.product_type_select_id);
 
-        if(value) {
+        if(!value) {
             product_type_select.value = 'none';
         } else {
             product_type_select.value = value;
+
+            if(product_type_select.value === 'spectrum') {
+                this.setProductSettingsVisibility('spectrum');
+            } else if(product_type_select.value === 'lightcurve') {
+                this.setProductSettingsVisibility('lightcurve');
+            } else {
+                this.setProductSettingsVisibility();
+            }
         }
     }
 
@@ -403,7 +414,9 @@ export class FITSSettingsComponent extends HTMLElement {
 
     setRMFFileSelectListener() {
         let rmf_file_select = document.getElementById(this.rmf_file_select_id);
+        rmf_file_select.addEventListener('change', (event) => {
 
+        })
     }
 
     setARFFileSelect(value = null) {
@@ -425,6 +438,9 @@ export class FITSSettingsComponent extends HTMLElement {
     setARFFileSelectListener() {
         let arf_file_select = document.getElementById(this.arf_file_select_id);
 
+        arf_file_select.addEventListener('change', (event) => {
+
+        })
     }
 
     setProductSettingsVisibility(settings = null) {
@@ -464,7 +480,7 @@ export class FITSSettingsComponent extends HTMLElement {
 
         let option = document.createElement("option");
 
-        option.setAttribute('selected', 'true');
+        option.setAttribute('selected', 'selected');
 
         option.value = 'none';
         option.text = 'None';

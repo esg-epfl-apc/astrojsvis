@@ -374,7 +374,7 @@ export class SettingsComponent extends HTMLElement {
 
                 if(file.product_type !== 'spectrum') {
                     fits_reader_wrapper.setFile(file.file);
-                } else {
+                } else if(file.product_type === 'spectrum') {
                     fits_reader_wrapper.setFileFromFileObject(file);
                 }
 
@@ -430,7 +430,6 @@ export class SettingsComponent extends HTMLElement {
         columns_opt_groups[0] = generic_opt_group;
 
         this._setSelectGroupErrorBars(columns_opt_groups);
-        //console.log(event);
     }
 
     _setContainer() {
@@ -656,7 +655,7 @@ export class SettingsComponent extends HTMLElement {
 
                 if(file.product_type !== 'spectrum') {
                     fits_reader_wrapper.setFile(file.file);
-                } else {
+                } else if(file.product_type === 'spectrum') {
                     fits_reader_wrapper.setFileFromFileObject(file);
                 }
 

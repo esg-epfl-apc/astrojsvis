@@ -94,9 +94,17 @@ export class FileRegistry {
     static setFileMetadata(file_id, metadata) {
         let files = FileRegistry.getAllFiles();
 
-        let file = files.filter(file => file.id !== parseInt(file_id));
+        let file = files.filter(file => file.id === parseInt(file_id))[0];
 
-        file = { ...file, ...metadata };
+        let rmf_id = metadata[0]['rmf_file'];
+        let arf_id = metadata[1]['arf_file'];
+        let product_type = metadata[2]['product_type'];
+
+        file['rmf_id'] = rmf_id;
+        file['arf_id'] =arf_id;
+        file['product_type'] = product_type;
+        //file = { ...file, ...metadata };
+        //Object.defineProperty(file, 'rmf', {rmf_id});
 
         if(FileRegistry.isFileCurrent(file_id)) {
             FileRegistry.removeFromCurrentFiles(file_id);
@@ -105,6 +113,7 @@ export class FileRegistry {
             FileRegistry.removeFromAvailableFiles(file_id);
             FileRegistry._addToAvailableFiles(file);
         }
+
     }
 
     static sendRegistryChangeEvent() {
