@@ -560,7 +560,7 @@ export class FITSReaderWrapper {
     }
 
     static _isURLValid(url) {
-        const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+        const urlRegex = /^(blob:[^ "]+|ftp:\/\/[^ "]+|http:\/\/[^ "]+|https:\/\/[^ "]+)$/;
         return urlRegex.test(url);
     }
 
