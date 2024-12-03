@@ -18,16 +18,15 @@ function getDataFromFITS(fits_file, hdu_index) {
     data.getColumn("RATE", function(col){y = col});
     data.getColumn("ERROR", function(col){dy = col});
 
+    /*
     x.forEach(function(d) {
-        console.log(d);
-    })
 
-    console.log(data);
+    })
+    */
 
     let columns = [];
 
     data.columns.forEach(function(column) {
-        console.log(column);
         let col_name = column;
         let col_data_json = [];
 
@@ -42,8 +41,6 @@ function getDataFromFITS(fits_file, hdu_index) {
         col_data.forEach(function(col) {
             let col_json_object = `{"${column}": ${col}}`;
 
-            console.log(col_json_object);
-
             col_data_json.push(col_json_object);
         })
 
@@ -52,22 +49,14 @@ function getDataFromFITS(fits_file, hdu_index) {
         //console.log(JSON.stringify(col_data_json));
     })
 
-    console.log(fits_data);
-    console.log(raw_data_array);
-
     fits_data['x'] = x;
     fits_data['y'] = y;
     fits_data['dy'] = dy;
-
-    console.log(fits_data);
 
     //initializeHDUSettings(fits_file);
     initializeDatasetSettings(columns);
     initializeAxisSettings(columns);
     initializeErrorBarsSettings(columns);
-
-    console.log(raw_data_array);
-
 
     const column_names = Object.keys(raw_data_array);
 
@@ -83,31 +72,23 @@ function getDataFromFITS(fits_file, hdu_index) {
         fits_data_json.push(obj);
     }
 
-    console.log(fits_data_json);
-
     createGraph(fits_file);
     createGraph0('graph-container1', fits_data_json);
 
-    console.log("FITS DATA WRAPPER")
     let file_data = [fits_file, fits_data_json, columns];
-    console.log(file_data);
 
     return file_data;
 }
 
 function initializeHDUSettings(fits_file) {
-    console.log(fits_file);
     let HDUs = [];
     let hdu_object = {};
 
     fits_file.hdus.forEach(function(hdu, index) {
-        console.log(index);
-        console.log(hdu);
 
         let is_hdu_type_supported = false;
 
         if (hdu.header.primary === true) {
-            console.log("Primary");
             hdu_object = {
                 "name": "Primary",
                 "index": index
@@ -116,7 +97,6 @@ function initializeHDUSettings(fits_file) {
             is_hdu_type_supported = true;
 
         } else {
-            console.log(hdu.header.get('XTENSION'));
             let type = hdu.header.get('XTENSION');
 
             if (type === 'BINTABLE' || type === 'TABLE') {
@@ -134,8 +114,8 @@ function initializeHDUSettings(fits_file) {
         }
     })
 
-    console.log(HDUs);
     setupHDUControls(HDUs);
+    setupDataContainerControls(HDUs);
 }
 
 function initializeDatasetSettings(columns) {
@@ -166,17 +146,13 @@ function setupHDUControls(HDUs) {
 
 function setupDatasetControls(columns) {
 
-    console.log(columns);
-
     let options_dataset = getDatasetsOptionsFromData(columns, null);
 
     let select_datasets = document.querySelectorAll(".select-dataset, .select-errorbar");
 
     options_dataset.forEach(function(option) {
-        console.log(option);
 
         select_datasets.forEach(function(select_dataset) {
-            console.log(select_dataset);
             let cloned_option = option.cloneNode(true);
             select_dataset.add(cloned_option);
         })
@@ -185,8 +161,6 @@ function setupDatasetControls(columns) {
 }
 
 function setupAxisControls(columns) {
-
-    console.log(columns);
 
     let options_axis = getDatasetsOptionsFromData(columns, null);
 
@@ -197,10 +171,7 @@ function setupAxisControls(columns) {
     })
 
     options_axis.forEach(function(option) {
-        console.log(option);
-
         select_axis.forEach(function(select_axis) {
-            console.log(select_axis);
             let cloned_option = option.cloneNode(true);
             select_axis.add(cloned_option);
         })
@@ -210,17 +181,12 @@ function setupAxisControls(columns) {
 
 function setupErrorBarsControls(columns) {
 
-    console.log(columns);
-
     let options_axis_error_bars = getDatasetsOptionsFromData(columns, null);
 
     let select_axis_error_bars = document.querySelectorAll(".select-axis-error-bars");
 
     options_axis_error_bars.forEach(function(option) {
-        console.log(option);
-
         select_axis_error_bars.forEach(function(select_axis_error_bar) {
-            console.log(select_axis_error_bar);
             let cloned_option = option.cloneNode(true);
             select_axis_error_bar.add(cloned_option);
         })
@@ -283,8 +249,6 @@ function getDatasetsOptionsFromData(columns, selected) {
 
     columns.forEach(function(column) {
 
-        console.log(column);
-
         option = document.createElement("option");
 
         option.value = column;
@@ -303,11 +267,7 @@ function resetSettingsOptions() {
 
     div_ids.forEach(function(div_id) {
 
-        console.log(div_id);
-
         div_select = document.getElementById(div_id);
-
-        console.log(div_select);
 
         const selectElements = div_select.querySelectorAll('select:not(.static-select)');
 
@@ -323,8 +283,23 @@ function resetSettingsOptions() {
     });
 }
 
+function setupDataContainerControls(HDUs) {
+    let options_hdu = getHDUsOptionsFromData(HDUs, 'Primary');
+
+    let select_hdu = document.getElementById("select-data-hdus");
+
+    options_hdu.forEach(function(option) {
+        select_hdu.add(option);
+    });
+
+    select_hdu = document.getElementById("select-header-hdus");
+
+    options_hdu.forEach(function(option) {
+        select_hdu.add(option.cloneNode(true));
+    });
+}
+
 function setDataContainer(data) {
-    console.log(data);
 
     const table_element = document.getElementById('table-data');
     const tbody = table_element.tBodies[0];
@@ -354,12 +329,27 @@ function setDataContainer(data) {
 }
 
 function setHeaderContainer(hdu) {
-    console.log(hdu);
 
-    const cards_array = Object.values(hdu.header.cards).filter(item => typeof item === 'object' && !Array.isArray(item));
+    /*
+    const cards_array = Object.values(hdu.header.cards)
+        .filter(([key, item]) => typeof item === 'object' && !Array.isArray(item));
+    */
+
+    const cards_array = [];
+
+    Object.entries(hdu.header.cards).forEach(function(item) {
+        let item_value_array = item[1];
+
+
+        if(typeof item_value_array === 'object' && !Array.isArray(item_value_array)) {
+            item_value_array['card_name'] = item[0];
+            cards_array.push(item_value_array);
+        }
+    })
+
+    const cards_array_key = Object.keys(hdu.header.cards);
 
     let sorted_hdu_cards = cards_array.sort((a, b) => a.index - b.index);
-    console.log(sorted_hdu_cards);
 
     const table_element = document.getElementById('table-header-data');
 
@@ -372,10 +362,12 @@ function setHeaderContainer(hdu) {
 
 
         const index_cell = row.insertCell(0);
-        const name_cell = row.insertCell(1);
-        const description_cell = row.insertCell(2);
+        const card_cell = row.insertCell(1);
+        const name_cell = row.insertCell(2);
+        const description_cell = row.insertCell(3);
 
         index_cell.textContent = card.index;
+        card_cell.textContent = card.card_name;
         name_cell.textContent = card.value;
         description_cell.textContent = card.comment;
     });

@@ -1,118 +1,140 @@
-let fits_data_json;
-let fits_data_file
-let fits_data_columns;
+import { FITSReaderWrapper } from './wrappers/FITSReaderWrapper.js'
+import { BokehWrapper } from './wrappers/BokehWrapper.js'
+import { D3Wrapper } from './wrappers/D3Wrapper.js'
+import { WrapperContainer } from './containers/WrapperContainer.js'
+import { VisualizationContainer } from './containers/VisualizationContainer.js'
+import { FileComponent } from './components/FileComponent.js'
+import { SettingsComponent } from './components/SettingsComponent.js'
+import { VisualizationComponent } from './components/VisualizationComponent.js'
+import { FITSSettingsComponent } from './components/file_type/FITSSettingsComponent.js'
+import { CSVSettingsComponent } from './components/file_type/CSVSettingsComponent.js'
+import { D3Graph } from "./visualizations/D3Graph";
+import { BokehGraph } from "./visualizations/BokehGraph";
+import {FileRegistry} from "./registries/FileRegistry";
+import {RegistryContainer} from "./containers/RegistryContainer";
+import {ArithmeticColumnInput} from "./components/inputs/ArithmeticColumnInput";
+import {CustomColumnRegistry} from "./registries/CustomColumnRegistry";
+import {Setup} from "./setup/Setup";
 
-function getFile(file_path) {
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-    return fetch(file_path)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error, status = ${response.status}`);
-            }
-            return response.arrayBuffer();
-        })
-        .then((buffer) => readFile(buffer, file_path));
+import '/css/styles.css';
+
+let bokeh_wrapper = new BokehWrapper();
+
+let d3_wrapper = new D3Wrapper();
+
+WrapperContainer.setBokehWrapper(bokeh_wrapper);
+WrapperContainer.setD3Wrapper(d3_wrapper);
+
+VisualizationContainer.setBokehVisualization(new BokehGraph());
+VisualizationContainer.setD3Visualization(new D3Graph());
+
+RegistryContainer.setFileRegistry(new FileRegistry());
+RegistryContainer.setCustomColumnRegistry(new CustomColumnRegistry());
+
+customElements.define('file-component', FileComponent);
+customElements.define('settings-component', SettingsComponent);
+customElements.define('visualization-component', VisualizationComponent);
+customElements.define('fits-component', FITSSettingsComponent);
+customElements.define('csv-component', CSVSettingsComponent);
+customElements.define('arithmetic-column-component', ArithmeticColumnInput);
+
+export function init(html_anchor_id, file_url = null) {
+
+    let anchor_element = document.getElementById(html_anchor_id);
+
+    let components = getComponentsObject();
+    let main_container = getMainDiv();
+
+    let file_component_struct = getFileComponentStructure();
+    let visualization_component_struct = getVisualizationComponentStructure();
+    let settings_component_struct = getSettingsComponentStructure();
+
+    let graph_settings_double_container = getDoubleContainer();
+
+    anchor_element.appendChild(main_container);
+
+    main_container.appendChild(file_component_struct[0]);
+    file_component_struct[0].appendChild(file_component_struct[1]);
+    file_component_struct[1].appendChild(components.file_component);
+    components.file_component.setup();
+
+    main_container.appendChild(graph_settings_double_container);
+
+    graph_settings_double_container.appendChild(visualization_component_struct[0])
+    visualization_component_struct[0].appendChild(components.visualization_component);
+    components.visualization_component.setup();
+
+    graph_settings_double_container.appendChild(settings_component_struct[0]);
+    settings_component_struct[0].appendChild(components.settings_components);
+    components.settings_components.setup();
+
+    d3_wrapper.setup();
+    VisualizationContainer.getD3Visualization().setup();
+
+    bokeh_wrapper.setup();
+    VisualizationContainer.getBokehVisualization().setup();
+
+    if(file_url) {
+        loadFITSFile(file_url);
+    }
 }
 
-function readFile(arrayBuffer, file_path) {
-    let fits_file = window.FITSReader.parseFITS(arrayBuffer);
-    console.log(fits_file);
+function getMainDiv() {
+    let main_container = Setup.getMainContainer();
 
-    let hdu = fits_file.getHDU();
-    console.log(hdu);
-
-    let header = hdu.header;
-    let data = hdu.data;
-
-    initializeFromFITS(fits_file);
-
-    //let fits_data = getDataFromFITS(fits_file, 1);
-
-    //console.log("FITS Data");
-    //console.log(fits_data);
-
-    fits_data_file = fits_file;
-
-    //fits_data_file = fits_data[0];
-    //fits_data_json = fits_data[1];
-    //fits_data_columns = fits_data[2];
+    return main_container;
 }
 
-getFile("spi_acs_FULL_SKY_lc.fits");
+function getComponentContainer() {
+    let component_container = Setup.getStandardContainer();
 
-function extractFormValues() {
-
-    let formValues = {};
-
-    let selects = document.querySelectorAll('.form-select');
-
-    selects.forEach(select => {
-        let id = select.id;
-        let classes = select.className.split(' ');
-        let value = select.value;
-
-        if(window.getComputedStyle(select, null).getPropertyValue("display") !== 'none' && value !== 'none') {
-            formValues[id] = {classes, value};
-        }
-    });
-
-    let checkboxes = document.querySelectorAll('.checkbox');
-
-    checkboxes.forEach(checkbox => {
-        let id = checkbox.id;
-        let classes = checkbox.className.split(' ');
-        let checked = checkbox.checked;
-
-        console.log(id);
-        console.log(checked);
-
-        if (id.includes('select-error-bar') && checked) {
-            let correspondingSelect = document.querySelector(`#${id.replace('checkbox', 'select')}`);
-            if (correspondingSelect) {
-                formValues[id] = { classes: correspondingSelect.className.split(' '), value: correspondingSelect.value };
-            }
-        } else {
-            formValues[id] = { classes, checked };
-        }
-    });
-
-    return formValues;
+    return component_container;
 }
 
+function getDoubleContainer() {
+    let double_container = Setup.getDoubleColumnContainer();
 
-function setGenerateButtonListener() {
-    let button_generate = document.getElementById('button-generate');
-    button_generate.addEventListener('click', function() {
-        let settings_data = extractFormValues();
-        console.log(settings_data);
-
-        if(parseInt(settings_data['select-lib'].value) === 0) {
-            createGraph0('graph-container1', fits_data_json, settings_data);
-            setDataContainer(fits_data_json);
-            setHeaderContainer(fits_data_file.hdus[settings_data['select-hdus'].value])
-        } else if(parseInt(settings_data['select-lib'].value) === 1) {
-            createGraph(fits_data_file, settings_data);
-            setDataContainer(fits_data_json);
-            setHeaderContainer(fits_data_file.hdus[settings_data['select-hdus'].value])
-        }
-    });
+    return double_container;
 }
 
-function setHDUSelectListener() {
-    let select_hdu = document.getElementById('select-hdus');
-    select_hdu.addEventListener('change', function(e) {
-        console.log(e);
-        let hdu_index = e.target.value;
+function getComponentsObject() {
+    let components = {};
 
-        resetSettingsOptions();
+    components.file_component = Setup.getFileComponent();
+    components.visualization_component = Setup.getVisualizationComponent();
+    components.settings_components = Setup.getSettingsComponent();
 
-        let fits_data = getDataFromFITS(fits_data_file, hdu_index)
-
-        fits_data_file = fits_data[0];
-        fits_data_json = fits_data[1];
-        fits_data_columns = fits_data[2];
-    });
+    return components;
 }
 
-setGenerateButtonListener();
-setHDUSelectListener();
+function getFileComponentStructure() {
+    let file_component_struct = Setup.getFileComponentStructure();
+
+    return file_component_struct;
+}
+
+function getVisualizationComponentStructure() {
+    let visualization_component_struct = Setup.getVisualizationComponentStructure();
+
+    return visualization_component_struct;
+}
+
+function getSettingsComponentStructure() {
+    let settings_component_struct = Setup.getSettingsComponentStructure();
+
+    return settings_component_struct;
+}
+
+function loadFITSFile(file_url) {
+    if(file_url) {
+        let fits_reader_wrapper = new FITSReaderWrapper(file_url);
+        setFITSReaderWrapper(fits_reader_wrapper);
+    }
+}
+
+function setFITSReaderWrapper(fits_reader_wrapper) {
+    WrapperContainer.setFITSReaderWrapper(fits_reader_wrapper);
+}
